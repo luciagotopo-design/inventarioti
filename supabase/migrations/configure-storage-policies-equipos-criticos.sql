@@ -1,0 +1,95 @@
+-- ⚠️ NOTA IMPORTANTE ⚠️
+-- Las políticas de Storage NO se pueden configurar directamente con SQL en Supabase
+-- Debes configurarlas desde la interfaz web de Supabase Dashboard
+-- 
+-- SIGUE ESTOS PASOS EN LUGAR DE EJECUTAR ESTE SCRIPT:
+--
+-- ========================================
+-- GUÍA PASO A PASO - CONFIGURAR STORAGE
+-- ========================================
+--
+-- 1. Ve a tu proyecto en Supabase Dashboard
+-- 2. Click en "Storage" en el menú lateral
+-- 3. Click en el bucket "equipos-criticos"
+-- 4. Click en "Policies" (pestaña superior)
+-- 5. Configura las siguientes políticas:
+--
+-- ┌─────────────────────────────────────────────────────────────┐
+-- │ POLÍTICA 1: INSERTAR (Upload)                               │
+-- └─────────────────────────────────────────────────────────────┘
+-- Policy name: Allow authenticated users to upload
+-- Allowed operation: INSERT
+-- Target roles: authenticated
+-- USING expression: true
+-- WITH CHECK expression: bucket_id = 'equipos-criticos'
+--
+-- ┌─────────────────────────────────────────────────────────────┐
+-- │ POLÍTICA 2: SELECCIONAR (View/Download)                     │
+-- └─────────────────────────────────────────────────────────────┘
+-- Policy name: Allow public to view files
+-- Allowed operation: SELECT
+-- Target roles: public
+-- USING expression: bucket_id = 'equipos-criticos'
+-- WITH CHECK expression: (dejar vacío)
+--
+-- ┌─────────────────────────────────────────────────────────────┐
+-- │ POLÍTICA 3: ACTUALIZAR (Update)                             │
+-- └─────────────────────────────────────────────────────────────┘
+-- Policy name: Allow authenticated users to update
+-- Allowed operation: UPDATE
+-- Target roles: authenticated
+-- USING expression: bucket_id = 'equipos-criticos'
+-- WITH CHECK expression: bucket_id = 'equipos-criticos'
+--
+-- ┌─────────────────────────────────────────────────────────────┐
+-- │ POLÍTICA 4: ELIMINAR (Delete)                               │
+-- └─────────────────────────────────────────────────────────────┘
+-- Policy name: Allow authenticated users to delete
+-- Allowed operation: DELETE
+-- Target roles: authenticated
+-- USING expression: bucket_id = 'equipos-criticos'
+-- WITH CHECK expression: (dejar vacío)
+--
+-- ========================================
+-- CONFIGURACIÓN DEL BUCKET
+-- ========================================
+--
+-- 1. En Storage → equipos-criticos
+-- 2. Click en "Configuration" (pestaña)
+-- 3. Marca estas opciones:
+--    ✅ Public bucket (para que las URLs sean públicas)
+--    ✅ File size limit: 52428800 (50MB)
+--    ✅ Allowed MIME types: image/*, video/*
+--
+-- ========================================
+-- VERIFICACIÓN
+-- ========================================
+--
+-- Puedes ejecutar esta query para verificar el bucket:
+SELECT 
+  id,
+  name,
+  public,
+  file_size_limit,
+  allowed_mime_types
+FROM storage.buckets 
+WHERE name = 'equipos-criticos';
+--
+-- Deberías ver:
+-- - public: true
+-- - file_size_limit: 52428800
+-- - allowed_mime_types: {image/*,video/*}
+--
+-- ========================================
+-- SOLUCIÓN RÁPIDA ALTERNATIVA
+-- ========================================
+--
+-- Si prefieres una configuración más permisiva (SOLO PARA DESARROLLO):
+--
+-- 1. Ve a Storage → equipos-criticos → Policies
+-- 2. Click en "New Policy"
+-- 3. Selecciona la plantilla "Allow all operations"
+-- 4. Click en "Review" y luego "Save policy"
+--
+-- ⚠️ ADVERTENCIA: Esta configuración permite a cualquier usuario autenticado
+-- realizar cualquier operación. Para producción, usa las políticas detalladas arriba.

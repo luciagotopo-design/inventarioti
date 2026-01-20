@@ -1,0 +1,180 @@
+// Esquema de Prisma para Sistema de Inventario TI
+// Base de datos: PostgreSQL (Supabase)
+// Arquitectura: Relacional con referencias
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ====================================================
+// ENTIDADES MAESTRAS
+// ====================================================
+
+model Categoria {
+  id          String   @id @default(uuid())
+  nombre      String   @unique
+  descripcion String?
+  activo      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relación
+  equipos InventarioGeneral[]
+
+  @@map("categorias")
+}
+
+model Estado {
+  id          String   @id @default(uuid())
+  nombre      String   @unique
+  color       String   // hex color para UI
+  descripcion String?
+  activo      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relación
+  equipos InventarioGeneral[]
+
+  @@map("estados")
+}
+
+model Sede {
+  id        String   @id @default(uuid())
+  nombre    String   @unique
+  direccion String?
+  ciudad    String?
+  activo    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relación
+  equipos InventarioGeneral[]
+
+  @@map("sedes")
+}
+
+model Prioridad {
+  id          String   @id @default(uuid())
+  nombre      String   @unique
+  color       String   // hex color para semáforo
+  nivel       Int      // nivel de prioridad (1=Alta, 2=Media, 3=Baja)
+  descripcion String?
+  orden       Int      // para ordenamiento
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relación
+  equiposCriticos EquipoCritico[]
+
+  @@map("prioridades")
+}
+
+model AccionMantenimiento {
+  id          String   @id @default(uuid())
+  nombre      String   @unique
+  descripcion String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relación
+  planes PlanMantenimiento[]
+
+  @@map("acciones_mantenimiento")
+}
+
+// ====================================================
+// TABLA PRINCIPAL: INVENTARIO GENERAL
+// ====================================================
+
+model InventarioGeneral {
+  id                 String    @id @default(uuid())
+  serial             String    @unique // Número de serie o etiqueta única
+  cantidad           Int       @default(1)
+  marca              String
+  modelo             String
+  ubicacionDetallada String?
+  responsable        String?
+  fechaRegistro      DateTime? @default(now())
+  imagenes           String[]  @default([]) // Array de URLs
+  esCritico          Boolean   @default(false)
+  observaciones      String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  // Relaciones con maestros
+  categoriaId String
+  categoria   Categoria? @relation(fields: [categoriaId], references: [id])
+
+  estadoId String
+  estado   Estado? @relation(fields: [estadoId], references: [id])
+
+  sedeId String
+  sede   Sede?  @relation(fields: [sedeId], references: [id])
+
+  // Relaciones con otras tablas
+  equipoCritico       EquipoCritico?
+  planesMantenimiento PlanMantenimiento[]
+
+  @@map("inventario_general")
+}
+
+// ====================================================
+// EQUIPOS CRÍTICOS
+// ====================================================
+
+model EquipoCritico {
+  id                 String    @id @default(uuid())
+  accionRequerida    String
+  imagenes           String[]  @default([])
+  costoEstimado      Float?
+  fechaLimiteAccion  DateTime?
+  resuelto           Boolean   @default(false)
+  notasResolucion    String?
+  fechaResolucion    DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  // Relación 1 a 1 con InventarioGeneral
+  idEquipo String            @unique
+  equipo   InventarioGeneral @relation(fields: [idEquipo], references: [id], onDelete: Cascade)
+
+  // Relación con Prioridad
+  nivelPrioridadId String
+  nivelPrioridad   Prioridad @relation(fields: [nivelPrioridadId], references: [id])
+
+  @@map("equipos_criticos")
+}
+
+// ====================================================
+// PLAN DE MANTENIMIENTO
+// ====================================================
+
+model PlanMantenimiento {
+  id                    String    @id @default(uuid())
+  responsableEjecucion  String?
+  fechaProgramada       DateTime
+  fechaEjecucion        DateTime?
+  estadoEjecucion       String    @default("Pendiente") // Pendiente, En Proceso, Completado, Cancelado
+  presupuesto           Float?
+  costoReal             Float?
+  imagenes              String[]  @default([]) // Array de URLs de evidencias
+  observaciones         String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  // Relación con InventarioGeneral
+  idEquipo String
+  equipo   InventarioGeneral @relation(fields: [idEquipo], references: [id], onDelete: Cascade)
+
+  // Relación con AccionMantenimiento
+  accionId String
+  accion   AccionMantenimiento @relation(fields: [accionId], references: [id])
+
+  @@map("plan_mantenimiento")
+}
