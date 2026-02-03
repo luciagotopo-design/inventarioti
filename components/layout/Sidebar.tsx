@@ -5,12 +5,12 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useClerk, useUser } from '@clerk/nextjs';
-import { 
-  LayoutDashboard, 
-  Package, 
-  Wrench, 
-  FileText, 
-  Users, 
+import {
+  LayoutDashboard,
+  Package,
+  Wrench,
+  FileText,
+  Users,
   LogOut,
   Phone,
   Shield,
@@ -24,9 +24,20 @@ export default function Sidebar() {
   const { signOut } = useClerk();
   const { user } = useUser();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  
+
   // Verificar rol desde Clerk metadata
-  const isAdmin = user?.publicMetadata?.role === 'admin';
+  const role = user?.publicMetadata?.role as string | undefined;
+  const isAdmin = role === 'admin' || role === 'super_admin';
+  const isTecnico = role === 'tecnico';
+  const isConsulta = role === 'consulta';
+
+  const getRoleLabel = () => {
+    if (role === 'super_admin') return '👑 Super Admin';
+    if (role === 'admin') return '⭐ Administrador';
+    if (role === 'tecnico') return '🔧 Técnico';
+    if (role === 'consulta') return '👀 Consulta';
+    return '👤 Usuario';
+  };
 
   const handleLogout = async () => {
     console.log('🚪 Cerrando sesión...');
@@ -93,17 +104,16 @@ export default function Sidebar() {
               .map((item) => {
                 const Icon = item.icon;
                 const isActive = pathname === item.href;
-                
+
                 return (
                   <li key={item.href}>
                     <Link
                       href={item.href}
                       onClick={() => setIsMobileMenuOpen(false)}
-                      className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
-                        isActive
+                      className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${isActive
                           ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/50 scale-105'
                           : 'text-gray-300 hover:bg-gray-700/50 hover:text-white'
-                      }`}
+                        }`}
                     >
                       <Icon className="h-5 w-5 flex-shrink-0" />
                       <span className="font-medium">{item.label}</span>
@@ -132,9 +142,7 @@ export default function Sidebar() {
                   {user.primaryPhoneNumber.phoneNumber}
                 </p>
               )}
-              {isAdmin && (
-                <p className="text-xs text-blue-400 font-semibold mt-1">⭐ Administrador</p>
-              )}
+              <p className="text-xs text-blue-400 font-semibold mt-1">{getRoleLabel()}</p>
             </div>
           </div>
           <button
