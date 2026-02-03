@@ -1,6 +1,6 @@
 // Componente KPI Card para Dashboard
 import React from 'react';
-import Card from './Card';
+import { Card } from './Card';
 
 interface KPICardProps {
   title: string;
@@ -14,10 +14,10 @@ interface KPICardProps {
   color?: string;
 }
 
-const KPICard: React.FC<KPICardProps> = ({ 
-  title, 
-  value, 
-  subtitle, 
+const KPICard: React.FC<KPICardProps> = ({
+  title,
+  value,
+  subtitle,
   icon,
   trend,
   color = 'blue'

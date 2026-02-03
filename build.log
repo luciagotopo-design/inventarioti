@@ -1,0 +1,97 @@
+
+> inventarioti@1.0.0 build
+> next build
+
+▲ Next.js 16.1.1 (Turbopack)
+- Environments: .env.local, .env
+- Experiments (use with caution):
+  · proxyClientMaxBodySize: "50mb"
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 26.4s
+  Running TypeScript ...
+  Collecting page data using 7 workers ...
+✅ Supabase configurado correctamente
+   URL: https://tuutoltyoczulqywmjmj.supabase.co
+   Key: eyJhbGciOiJIUzI1NiIs...
+✅ Supabase configurado correctamente
+   URL: https://tuutoltyoczulqywmjmj.supabase.co
+   Key: eyJhbGciOiJIUzI1NiIs...
+✅ Supabase configurado correctamente
+   URL: https://tuutoltyoczulqywmjmj.supabase.co
+   Key: eyJhbGciOiJIUzI1NiIs...
+✅ Supabase configurado correctamente
+   URL: https://tuutoltyoczulqywmjmj.supabase.co
+   Key: eyJhbGciOiJIUzI1NiIs...
+✅ Supabase configurado correctamente
+✅ API Key encontrada: AIzaSyBMBX...
+   URL: https://tuutoltyoczulqywmjmj.supabase.co
+   Key: eyJhbGciOiJIUzI1NiIs...
+✅ Supabase configurado correctamente
+   URL: https://tuutoltyoczulqywmjmj.supabase.co
+   Key: eyJhbGciOiJIUzI1NiIs...
+✅ API Key encontrada: AIzaSyBMBX...
+✅ Supabase configurado correctamente
+   URL: https://tuutoltyoczulqywmjmj.supabase.co
+   Key: eyJhbGciOiJIUzI1NiIs...
+✅ Supabase Admin configurado (Service Role)
+  Generating static pages using 7 workers (0/36) ...
+✅ API Key encontrada: AIzaSyBMBX...
+✅ Supabase configurado correctamente
+   URL: https://tuutoltyoczulqywmjmj.supabase.co
+   Key: eyJhbGciOiJIUzI1NiIs...
+  Generating static pages using 7 workers (9/36) 
+✅ Supabase Admin configurado (Service Role)
+  Generating static pages using 7 workers (18/36) 
+  Generating static pages using 7 workers (27/36) 
+✓ Generating static pages using 7 workers (36/36) in 2.8s
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ○ /admin
+├ ○ /admin/roles
+├ ○ /admin/usuarios
+├ ƒ /api/auto-aprobar-usuario
+├ ƒ /api/categorias
+├ ƒ /api/categorias/[id]
+├ ƒ /api/dashboard
+├ ƒ /api/diagnostico
+├ ƒ /api/eliminar-usuario
+├ ƒ /api/equipos-criticos
+├ ƒ /api/equipos-criticos/[id]
+├ ƒ /api/equipos-criticos/sincronizar
+├ ƒ /api/equipos/analisis-mantenimiento
+├ ƒ /api/inventario
+├ ƒ /api/inventario/[id]
+├ ƒ /api/inventario/import
+├ ƒ /api/listar-usuarios
+├ ƒ /api/maestros
+├ ƒ /api/plan-mantenimiento
+├ ƒ /api/plan-mantenimiento/[id]
+├ ƒ /api/plan-mantenimiento/analizar
+├ ƒ /api/reportes/diagnosticos
+├ ƒ /api/reportes/generar
+├ ƒ /api/reportes/maestro
+├ ƒ /api/reportes/mantenimientos
+├ ƒ /api/roles
+├ ƒ /api/storage/upload
+├ ƒ /api/usuarios
+├ ƒ /api/validar-usuario
+├ ƒ /api/verificar-conexion
+├ ○ /categorias
+├ ○ /dashboard
+├ ○ /equipos-criticos
+├ ○ /inventario
+├ ƒ /login/[[...login]]
+├ ○ /plan-mantenimiento
+├ ƒ /registro/[[...registro]]
+└ ○ /reportes
+
+
+ƒ Proxy (Middleware)
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

@@ -30,9 +30,9 @@ async function main() {
 
   // Crear o actualizar prioridades
   console.log('⚡ Prioridades...');
-  await prisma.prioridad.upsert({ where: { nombre: 'Alta' }, update: {}, create: { nombre: 'Alta', color: '#EF4444', orden: 1 } });
-  await prisma.prioridad.upsert({ where: { nombre: 'Media' }, update: {}, create: { nombre: 'Media', color: '#F59E0B', orden: 2 } });
-  await prisma.prioridad.upsert({ where: { nombre: 'Baja' }, update: {}, create: { nombre: 'Baja', color: '#10B981', orden: 3 } });
+  await prisma.prioridad.upsert({ where: { nombre: 'Alta' }, update: {}, create: { nombre: 'Alta', color: '#EF4444', orden: 1, nivel: 1 } });
+  await prisma.prioridad.upsert({ where: { nombre: 'Media' }, update: {}, create: { nombre: 'Media', color: '#F59E0B', orden: 2, nivel: 2 } });
+  await prisma.prioridad.upsert({ where: { nombre: 'Baja' }, update: {}, create: { nombre: 'Baja', color: '#10B981', orden: 3, nivel: 3 } });
   console.log('✅ Prioridades listas\n');
 
   // Crear o actualizar acciones
@@ -43,7 +43,7 @@ async function main() {
 
   // Crear equipos
   console.log('💻 Creando equipos...\n');
-  
+
   const equipos = [
     { serial: 'CDN24440PBB', marca: 'Hp', modelo: 'Ultrabook', cat: cat1.id, est: est1.id, obs: 'Presenta fallo en bateria, por lo cual solo funciona si esta conectado a la corriente' },
     { serial: '4535', marca: 'Apple', modelo: 'Apple', cat: cat1.id, est: est1.id, obs: 'NINGUNA' },
@@ -84,11 +84,11 @@ async function main() {
 
   for (const eq of equipos) {
     try {
-      const existe = await prisma.inventarioGeneral.findUnique({ where: { serialEtiqueta: eq.serial } });
-      
+      const existe = await prisma.inventarioGeneral.findUnique({ where: { serial: eq.serial } });
+
       if (existe) {
         await prisma.inventarioGeneral.update({
-          where: { serialEtiqueta: eq.serial },
+          where: { serial: eq.serial },
           data: {
             marca: eq.marca,
             modelo: eq.modelo,
@@ -97,7 +97,7 @@ async function main() {
             sedeId: sede1.id,
             ubicacionDetallada: 'Oficina Principal',
             responsable: 'Diana Gonzalez',
-            critico: eq.critico || false,
+            esCritico: eq.critico || false,
             observaciones: eq.obs,
           },
         });
@@ -106,7 +106,7 @@ async function main() {
       } else {
         await prisma.inventarioGeneral.create({
           data: {
-            serialEtiqueta: eq.serial,
+            serial: eq.serial,
             marca: eq.marca,
             modelo: eq.modelo,
             categoriaId: eq.cat,
@@ -114,7 +114,7 @@ async function main() {
             sedeId: sede1.id,
             ubicacionDetallada: 'Oficina Principal',
             responsable: 'Diana Gonzalez',
-            critico: eq.critico || false,
+            esCritico: eq.critico || false,
             observaciones: eq.obs,
           },
         });

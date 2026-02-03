@@ -236,6 +236,7 @@ async function main() {
       create: {
         nombre: 'Alta',
         color: '#ef4444', // rojo
+        nivel: 1,
         orden: 1,
       },
     }),
@@ -245,6 +246,7 @@ async function main() {
       create: {
         nombre: 'Media',
         color: '#f59e0b', // amarillo
+        nivel: 2,
         orden: 2,
       },
     }),
@@ -254,6 +256,7 @@ async function main() {
       create: {
         nombre: 'Baja',
         color: '#10b981', // verde
+        nivel: 3,
         orden: 3,
       },
     }),
