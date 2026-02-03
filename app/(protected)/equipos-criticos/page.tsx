@@ -46,19 +46,19 @@ export default function EquiposCriticosPage() {
   const [prioridadFilter, setPrioridadFilter] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [sincronizando, setSincronizando] = useState(false);
-  
+
   // Modal de resolución
   const [isResolveModalOpen, setIsResolveModalOpen] = useState(false);
   const [resolvingEquipo, setResolvingEquipo] = useState<EquipoCritico | null>(null);
   const [notasResolucion, setNotasResolucion] = useState('');
-  
+
   // Modal de evidencias
   const [isEvidenceModalOpen, setIsEvidenceModalOpen] = useState(false);
   const [currentEquipo, setCurrentEquipo] = useState<EquipoCritico | null>(null);
   const [evidenceFiles, setEvidenceFiles] = useState<File[]>([]);
   const [uploadingEvidence, setUploadingEvidence] = useState(false);
   const [evidenceDescription, setEvidenceDescription] = useState('');
-  
+
   // Modal de detalles
   const [isDetalleModalOpen, setIsDetalleModalOpen] = useState(false);
   const [equipoDetalleSeleccionado, setEquipoDetalleSeleccionado] = useState<any>(null);
@@ -80,11 +80,11 @@ export default function EquiposCriticosPage() {
     try {
       const response = await fetch('/api/maestros');
       console.log(`📊 Maestros response status: ${response.status}`);
-      
+
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
       }
-      
+
       const data = await response.json();
       console.log(`✅ Prioridades cargadas: ${data.prioridades?.length}\n`);
       setPrioridades(data.prioridades);
@@ -96,7 +96,7 @@ export default function EquiposCriticosPage() {
   const fetchEquiposCriticos = async () => {
     console.log('\n🔵 [EQUIPOS CRÍTICOS] Cargando equipos críticos...');
     const startTime = Date.now();
-    
+
     try {
       setLoading(true);
       const params = new URLSearchParams({
@@ -107,14 +107,14 @@ export default function EquiposCriticosPage() {
       console.log(`🔍 Consultando /api/equipos-criticos?${params}`);
       const response = await fetch(`/api/equipos-criticos?${params}`);
       console.log(`📊 Response status: ${response.status}`);
-      
+
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
       }
-      
+
       const data = await response.json();
       const duration = Date.now() - startTime;
-      
+
       console.log(`✅ Equipos críticos cargados en ${duration}ms - Total: ${data.length}\n`);
       setEquiposCriticos(data);
     } catch (error) {
@@ -155,7 +155,7 @@ export default function EquiposCriticosPage() {
   const handleSincronizar = async () => {
     console.log('\n🔄 [EQUIPOS CRÍTICOS] Iniciando sincronización manual...');
     setSincronizando(true);
-    
+
     try {
       const response = await fetch('/api/equipos-criticos/sincronizar', {
         method: 'POST',
@@ -168,13 +168,13 @@ export default function EquiposCriticosPage() {
 
       const result = await response.json();
       console.log('✅ Sincronización completada:', result);
-      
+
       showToast(
         `✅ Sincronización completada\n• Insertados: ${result.stats.insertados}\n• Actualizados: ${result.stats.actualizados}\n• Eliminados: ${result.stats.eliminados}\n• Total críticos: ${result.stats.totalCriticos}`,
         'success',
         6000
       );
-      
+
       // Recargar la lista
       fetchEquiposCriticos();
     } catch (error) {
@@ -192,10 +192,10 @@ export default function EquiposCriticosPage() {
     }
 
     setUploadingEvidence(true);
-    
+
     try {
       console.log(`📤 Subiendo ${evidenceFiles.length} archivos para equipo ${currentEquipo.id}...`);
-      
+
       // Subir archivos al bucket
       const uploadResults = await uploadMultipleFiles(
         evidenceFiles,
@@ -204,7 +204,7 @@ export default function EquiposCriticosPage() {
 
       // Filtrar solo los exitosos
       const successfulUploads = uploadResults.filter(r => r.success);
-      
+
       if (successfulUploads.length === 0) {
         throw new Error('No se pudo subir ningún archivo');
       }
@@ -246,16 +246,16 @@ export default function EquiposCriticosPage() {
         `✅ ${successfulUploads.length} evidencia(s) agregada(s) exitosamente\n${currentEquipo.equipo?.marca} ${currentEquipo.equipo?.modelo}`,
         'success'
       );
-      
+
       // Cerrar modal y limpiar
       setIsEvidenceModalOpen(false);
       setCurrentEquipo(null);
       setEvidenceFiles([]);
       setEvidenceDescription('');
-      
+
       // Recargar datos
       fetchEquiposCriticos();
-      
+
     } catch (error) {
       console.error('❌ Error al subir evidencias:', error);
       showToast(
@@ -316,25 +316,23 @@ export default function EquiposCriticosPage() {
             </p>
             {/* Estado general del sistema */}
             <div className="mt-3 flex items-center gap-2">
-              <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium ${
-                stats.urgentes > 0 
-                  ? 'bg-red-100 text-red-800 border border-red-200' 
-                  : stats.pendientes > 0 
+              <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium ${stats.urgentes > 0
+                  ? 'bg-red-100 text-red-800 border border-red-200'
+                  : stats.pendientes > 0
                     ? 'bg-amber-100 text-amber-800 border border-amber-200'
                     : 'bg-green-100 text-green-800 border border-green-200'
-              }`}>
-                <div className={`w-2 h-2 rounded-full ${
-                  stats.urgentes > 0 ? 'bg-red-500' : stats.pendientes > 0 ? 'bg-amber-500' : 'bg-green-500'
-                }`} />
-                {stats.urgentes > 0 
-                  ? 'Atención Urgente Requerida' 
-                  : stats.pendientes > 0 
-                    ? 'Monitoreo Activo' 
+                }`}>
+                <div className={`w-2 h-2 rounded-full ${stats.urgentes > 0 ? 'bg-red-500' : stats.pendientes > 0 ? 'bg-amber-500' : 'bg-green-500'
+                  }`} />
+                {stats.urgentes > 0
+                  ? 'Atención Urgente Requerida'
+                  : stats.pendientes > 0
+                    ? 'Monitoreo Activo'
                     : 'Sistema Estable'}
               </div>
             </div>
           </div>
-          
+
           <Button
             onClick={handleSincronizar}
             disabled={sincronizando}
@@ -361,7 +359,7 @@ export default function EquiposCriticosPage() {
         </div>
 
         {/* Panel de estadísticas */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3 sm:gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
           <div className="p-4 bg-linear-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-lg hover:shadow-md transition-all duration-200 hover:scale-105 cursor-pointer group">
             <div className="flex items-center gap-2 mb-1">
               <CheckCircle className="h-4 w-4 text-blue-600" />
@@ -441,7 +439,7 @@ export default function EquiposCriticosPage() {
                     variant={prioridadFilter === prioridad.id ? 'primary' : 'outline'}
                     onClick={() => setPrioridadFilter(prioridadFilter === prioridad.id ? '' : prioridad.id)}
                   >
-                    <span 
+                    <span
                       className="inline-block w-3 h-3 rounded-full mr-2"
                       style={{ backgroundColor: prioridad.color }}
                     />
@@ -450,7 +448,7 @@ export default function EquiposCriticosPage() {
                 ))}
               </div>
             </div>
-            
+
             <div className="lg:border-l lg:border-gray-200 lg:pl-4">
               <p className="text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wide">Estado</p>
               <label className="flex items-center gap-3 cursor-pointer bg-gray-50 px-4 py-2.5 rounded-lg hover:bg-gray-100 transition-colors">
@@ -510,533 +508,526 @@ export default function EquiposCriticosPage() {
               resultado{equiposFiltrados.length !== 1 ? 's' : ''} encontrado{equiposFiltrados.length !== 1 ? 's' : ''}
             </div>
           )}
-          
-          <div className="grid grid-cols-1 gap-6">
-          {equiposFiltrados.map((equipoCritico, index) => {
-            const diasRestantes = getDiasRestantes(equipoCritico.fechaLimiteAccion);
-            const isUrgente = diasRestantes !== null && diasRestantes <= 7;
 
-            return (
-              <Card
-                key={equipoCritico.id}
-                className={`
+          <div className="grid grid-cols-1 gap-6">
+            {equiposFiltrados.map((equipoCritico, index) => {
+              const diasRestantes = getDiasRestantes(equipoCritico.fechaLimiteAccion);
+              const isUrgente = diasRestantes !== null && diasRestantes <= 7;
+
+              return (
+                <Card
+                  key={equipoCritico.id}
+                  className={`
                   cursor-pointer transition-all duration-200 hover:shadow-lg
                   ${isUrgente && !equipoCritico.resuelto
-                    ? 'border-l-4 border-l-red-400 bg-white hover:bg-red-50/30'
-                    : equipoCritico.resuelto
-                      ? 'border-l-4 border-l-green-400 bg-white hover:bg-green-50/30'
-                      : 'border-l-4 border-l-blue-400 bg-white hover:bg-blue-50/30'}
+                      ? 'border-l-4 border-l-red-400 bg-white hover:bg-red-50/30'
+                      : equipoCritico.resuelto
+                        ? 'border-l-4 border-l-green-400 bg-white hover:bg-green-50/30'
+                        : 'border-l-4 border-l-blue-400 bg-white hover:bg-blue-50/30'}
                 `}
-                style={{
-                  animation: `fadeInUp 0.5s ease-out ${index * 0.1}s both`
-                }}
-                onClick={() => handleExpandEquipo(equipoCritico)}
-              >
-                <div className="flex items-center gap-4 p-2">
-                  {/* Indicador de criticidad minimalista */}
-                  <div className="shrink-0">
-                    <div
-                      className="w-3 h-3 rounded-full"
-                      style={{ backgroundColor: equipoCritico.nivelPrioridad?.color }}
-                    />
-                  </div>
+                  style={{
+                    animation: `fadeInUp 0.5s ease-out ${index * 0.1}s both`
+                  }}
+                  onClick={() => handleExpandEquipo(equipoCritico)}
+                >
+                  <div className="flex items-center gap-4 p-2">
+                    {/* Indicador de criticidad minimalista */}
+                    <div className="shrink-0">
+                      <div
+                        className="w-3 h-3 rounded-full"
+                        style={{ backgroundColor: equipoCritico.nivelPrioridad?.color }}
+                      />
+                    </div>
 
-                  {/* Información esencial */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-4">
-                      <div className="min-w-0 flex-1">
-                        <h3 className="text-base font-semibold text-gray-900 truncate">
-                          {equipoCritico.equipo?.marca} {equipoCritico.equipo?.modelo}
-                        </h3>
-                        <p className="text-sm text-gray-600 truncate">
-                          {equipoCritico.equipo?.sede?.nombre} • ID: {equipoCritico.id.slice(-8)}
-                        </p>
-                      </div>
+                    {/* Información esencial */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="min-w-0 flex-1">
+                          <h3 className="text-base font-semibold text-gray-900 truncate">
+                            {equipoCritico.equipo?.marca} {equipoCritico.equipo?.modelo}
+                          </h3>
+                          <p className="text-sm text-gray-600 truncate">
+                            {equipoCritico.equipo?.sede?.nombre} • ID: {equipoCritico.id.slice(-8)}
+                          </p>
+                        </div>
 
-                      {/* Estado y badge de criticidad */}
-                      <div className="flex items-center gap-3 shrink-0">
-                        <Badge
-                          color={equipoCritico.nivelPrioridad?.color}
-                          className="text-xs px-2 py-1"
-                        >
-                          {equipoCritico.nivelPrioridad?.nombre}
-                        </Badge>
+                        {/* Estado y badge de criticidad */}
+                        <div className="flex items-center gap-3 shrink-0">
+                          <Badge
+                            color={equipoCritico.nivelPrioridad?.color}
+                            className="text-xs px-2 py-1"
+                          >
+                            {equipoCritico.nivelPrioridad?.nombre}
+                          </Badge>
 
-                        <div className="flex items-center gap-2">
-                          <div className={`w-2 h-2 rounded-full ${
-                            equipoCritico.resuelto ? 'bg-green-500' :
-                            isUrgente ? 'bg-red-500' : 'bg-amber-500'
-                          }`} />
-                          <span className="text-sm font-medium text-gray-700">
-                            {equipoCritico.resuelto ? 'Resuelto' :
-                             isUrgente ? 'Urgente' : 'Pendiente'}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <div className={`w-2 h-2 rounded-full ${equipoCritico.resuelto ? 'bg-green-500' :
+                                isUrgente ? 'bg-red-500' : 'bg-amber-500'
+                              }`} />
+                            <span className="text-sm font-medium text-gray-700">
+                              {equipoCritico.resuelto ? 'Resuelto' :
+                                isUrgente ? 'Urgente' : 'Pendiente'}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
 
-                  {/* Icono de expandir */}
-                  <div className="shrink-0 text-gray-400">
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
+                    {/* Icono de expandir */}
+                    <div className="shrink-0 text-gray-400">
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </div>
                   </div>
-                </div>
-              </Card>
-            );
-          })}
-        </div>
-      </div>
-    )}
-
-    {/* Modal de resolución - MEJORADO */}
-    <Modal
-      isOpen={isResolveModalOpen}
-      onClose={() => {
-        setIsResolveModalOpen(false);
-        setNotasResolucion('');
-        setResolvingEquipo(null);
-      }}
-      title="✅ Marcar como Resuelto"
-      footer={
-        <div className="flex justify-end gap-3">
-          <Button variant="outline" onClick={() => {
-            setIsResolveModalOpen(false);
-            setNotasResolucion('');
-            setResolvingEquipo(null);
-          }}>
-            Cancelar
-          </Button>
-          <Button 
-            variant="success" 
-            onClick={handleResolve}
-            disabled={!notasResolucion.trim()}
-          >
-            <CheckCircle className="h-4 w-4 mr-2" />
-            Confirmar Resolución
-          </Button>
-        </div>
-      }
-    >
-      <div className="space-y-4">
-        {/* Advertencia importante */}
-        <div className="p-4 bg-green-50 border-l-4 border-green-500 rounded-r">
-          <div className="flex items-start gap-3">
-            <CheckCircle className="h-5 w-5 text-green-600 shrink-0 mt-0.5" />
-            <div>
-              <p className="font-semibold text-green-900 mb-1">
-                Resolución del Equipo Crítico
-              </p>
-              <p className="text-sm text-green-800">
-                Al confirmar, este equipo será marcado como resuelto y se registrará la fecha de resolución.
-                Esta acción indica que el problema ha sido completamente solucionado.
-              </p>
-            </div>
+                </Card>
+              );
+            })}
           </div>
         </div>
+      )}
 
-        {/* Info del equipo */}
-        <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
-          <p className="text-xs text-gray-500 uppercase tracking-wide mb-2">Equipo a Resolver</p>
-          <p className="font-bold text-gray-900 text-lg">
-            {resolvingEquipo?.equipo?.marca} {resolvingEquipo?.equipo?.modelo}
-          </p>
-          <p className="text-sm text-gray-600 mt-1">
-            Serial: <span className="font-medium">{resolvingEquipo?.equipo?.serial}</span>
-          </p>
-          {resolvingEquipo?.accionRequerida && (
-            <div className="mt-3 pt-3 border-t border-gray-200">
-              <p className="text-xs text-gray-500 mb-1">Problema reportado:</p>
-              <p className="text-sm text-gray-700 italic">"{resolvingEquipo.accionRequerida}"</p>
+      {/* Modal de resolución - MEJORADO */}
+      <Modal
+        isOpen={isResolveModalOpen}
+        onClose={() => {
+          setIsResolveModalOpen(false);
+          setNotasResolucion('');
+          setResolvingEquipo(null);
+        }}
+        title="✅ Marcar como Resuelto"
+        footer={
+          <div className="flex justify-end gap-3">
+            <Button variant="outline" onClick={() => {
+              setIsResolveModalOpen(false);
+              setNotasResolucion('');
+              setResolvingEquipo(null);
+            }}>
+              Cancelar
+            </Button>
+            <Button
+              variant="success"
+              onClick={handleResolve}
+              disabled={!notasResolucion.trim()}
+            >
+              <CheckCircle className="h-4 w-4 mr-2" />
+              Confirmar Resolución
+            </Button>
+          </div>
+        }
+      >
+        <div className="space-y-4">
+          {/* Advertencia importante */}
+          <div className="p-4 bg-green-50 border-l-4 border-green-500 rounded-r">
+            <div className="flex items-start gap-3">
+              <CheckCircle className="h-5 w-5 text-green-600 shrink-0 mt-0.5" />
+              <div>
+                <p className="font-semibold text-green-900 mb-1">
+                  Resolución del Equipo Crítico
+                </p>
+                <p className="text-sm text-green-800">
+                  Al confirmar, este equipo será marcado como resuelto y se registrará la fecha de resolución.
+                  Esta acción indica que el problema ha sido completamente solucionado.
+                </p>
+              </div>
             </div>
+          </div>
+
+          {/* Info del equipo */}
+          <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
+            <p className="text-xs text-gray-500 uppercase tracking-wide mb-2">Equipo a Resolver</p>
+            <p className="font-bold text-gray-900 text-lg">
+              {resolvingEquipo?.equipo?.marca} {resolvingEquipo?.equipo?.modelo}
+            </p>
+            <p className="text-sm text-gray-600 mt-1">
+              Serial: <span className="font-medium">{resolvingEquipo?.equipo?.serial}</span>
+            </p>
+            {resolvingEquipo?.accionRequerida && (
+              <div className="mt-3 pt-3 border-t border-gray-200">
+                <p className="text-xs text-gray-500 mb-1">Problema reportado:</p>
+                <p className="text-sm text-gray-700 italic">"{resolvingEquipo.accionRequerida}"</p>
+              </div>
+            )}
+          </div>
+
+          <Textarea
+            label="Notas de Resolución *"
+            placeholder="Describe detalladamente las acciones tomadas para resolver el problema, repuestos utilizados, tiempo invertido, etc..."
+            value={notasResolucion}
+            onChange={(e) => setNotasResolucion(e.target.value)}
+            required
+            rows={5}
+          />
+
+          {notasResolucion.trim().length > 0 && (
+            <p className="text-xs text-gray-500">
+              {notasResolucion.trim().length} caracteres
+            </p>
           )}
         </div>
+      </Modal>
 
-        <Textarea
-          label="Notas de Resolución *"
-          placeholder="Describe detalladamente las acciones tomadas para resolver el problema, repuestos utilizados, tiempo invertido, etc..."
-          value={notasResolucion}
-          onChange={(e) => setNotasResolucion(e.target.value)}
-          required
-          rows={5}
-        />
-        
-        {notasResolucion.trim().length > 0 && (
-          <p className="text-xs text-gray-500">
-            {notasResolucion.trim().length} caracteres
-          </p>
-        )}
-      </div>
-    </Modal>
-
-    {/* Modal de Evidencias - MEJORADO */}
-    <Modal
-      isOpen={isEvidenceModalOpen}
-      onClose={() => {
-        setIsEvidenceModalOpen(false);
-        setCurrentEquipo(null);
-        setEvidenceFiles([]);
-        setEvidenceDescription('');
-      }}
-      title="📸 Agregar Evidencias"
-      footer={
-        <div className="flex justify-end gap-3">
-          <Button
-            variant="outline"
-            onClick={() => {
-              setIsEvidenceModalOpen(false);
-              setCurrentEquipo(null);
-              setEvidenceFiles([]);
-              setEvidenceDescription('');
-            }}
-          >
-            Cancelar
-          </Button>
-          <Button
-            variant="primary"
-            onClick={handleUploadEvidence}
-            disabled={uploadingEvidence || evidenceFiles.length === 0}
-          >
-            {uploadingEvidence ? (
-              <>
-                <svg className="animate-spin -ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Subiendo...
-              </>
-            ) : (
-              <>
-                <ImageIcon className="h-4 w-4 mr-2" />
-                Subir {evidenceFiles.length} archivo{evidenceFiles.length !== 1 ? 's' : ''}
-              </>
-            )}
-          </Button>
-        </div>
-      }
-    >
-      <div className="space-y-5">
-        {/* Info del equipo */}
-        <div className="p-4 bg-linear-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg">
-          <div className="flex items-start gap-3">
-            <div className="p-2 bg-blue-600 rounded-lg">
-              <ImageIcon className="h-5 w-5 text-white" />
-            </div>
-            <div>
-              <p className="font-bold text-blue-900">
-                {currentEquipo?.equipo?.marca} {currentEquipo?.equipo?.modelo}
-              </p>
-              <p className="text-sm text-blue-700">
-                Serial: {currentEquipo?.equipo?.serial}
-              </p>
-              {currentEquipo?.imagenes && currentEquipo.imagenes.length > 0 && (
-                <p className="text-xs text-blue-600 mt-1">
-                  Ya tiene {currentEquipo.imagenes.length} evidencia{currentEquipo.imagenes.length !== 1 ? 's' : ''} adjunta{currentEquipo.imagenes.length !== 1 ? 's' : ''}
-                </p>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Nota informativa */}
-        <div className="p-3 bg-amber-50 border-l-4 border-amber-400 rounded-r">
-          <p className="text-sm text-amber-800">
-            <strong>ℹ️ Nota:</strong> Agregar evidencias NO marcará el equipo como resuelto. 
-            Podrás marcarlo como resuelto posteriormente cuando el problema esté completamente solucionado.
-          </p>
-        </div>
-
-        <Textarea
-          label="Descripción de las evidencias"
-          placeholder="Describe brevemente qué muestran estas evidencias... (opcional)"
-          value={evidenceDescription}
-          onChange={(e) => setEvidenceDescription(e.target.value)}
-          rows={3}
-        />
-
-        <FileUpload
-          onFilesSelected={setEvidenceFiles}
-          maxFiles={10}
-          accept="image/*,video/*"
-          allowCamera={true}
-          allowVideo={true}
-          disabled={uploadingEvidence}
-          label="Archivos"
-          hint="📸 Toma fotos o 🎥 videos, o sube archivos existentes. Máximo 10 archivos de 50MB cada uno."
-        />
-      </div>
-    </Modal>
-
-    {/* Modal de Detalles del Equipo */}
-    <EquipoDetalleModal
-      isOpen={isDetalleModalOpen}
-      onClose={() => {
-        setIsDetalleModalOpen(false);
-        setEquipoDetalleSeleccionado(null);
-      }}
-      equipo={equipoDetalleSeleccionado}
-    />
-
-    {/* Modal de Vista Expandida */}
-    <Modal
-      isOpen={isExpandedViewOpen}
-      onClose={() => {
-        setIsExpandedViewOpen(false);
-        setExpandedEquipo(null);
-      }}
-      title="Detalles del Equipo Crítico"
-      size="xl"
-    >
-      {expandedEquipo && (() => {
-        const diasRestantes = getDiasRestantes(expandedEquipo.fechaLimiteAccion);
-        const isUrgente = diasRestantes !== null && diasRestantes <= 7;
-
-        return (
-          <div className="space-y-6">
-            {/* Header con información esencial */}
-            <div className="flex flex-col md:flex-row gap-6">
-              {/* Indicador de criticidad */}
-              <div className="flex flex-col items-center justify-center p-6 bg-linear-to-br from-gray-50 to-gray-100 rounded-lg min-w-40 border border-gray-200 shadow-sm">
-                <div
-                  className="w-20 h-20 rounded-full flex items-center justify-center text-white font-bold text-2xl mb-3 shadow-lg ring-4 ring-white"
-                  style={{ backgroundColor: expandedEquipo.nivelPrioridad?.color }}
-                >
-                  {expandedEquipo.nivelPrioridad?.nombre === 'Alta' ? '🚨' :
-                   expandedEquipo.nivelPrioridad?.nombre === 'Media' ? '⚠️' : '✅'}
-                </div>
-                <Badge
-                  color={expandedEquipo.nivelPrioridad?.color}
-                  className="font-semibold text-sm px-3 py-1"
-                >
-                  {expandedEquipo.nivelPrioridad?.nombre}
-                </Badge>
-                <p className="text-xs text-gray-500 mt-2 text-center font-medium">Criticidad</p>
-              </div>
-
-              {/* Información principal */}
-              <div className="flex-1">
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                  {expandedEquipo.equipo?.marca} {expandedEquipo.equipo?.modelo}
-                </h2>
-                <p className="text-sm text-gray-600 mb-4">
-                  Serial: <span className="font-mono text-gray-800">{expandedEquipo.equipo?.serial}</span>
-                </p>
-
-                {/* Estado y badges */}
-                <div className="flex flex-wrap gap-2 mb-4">
-                  <Badge color={expandedEquipo.equipo?.estado?.color}>
-                    {expandedEquipo.equipo?.estado?.nombre}
-                  </Badge>
-                  <Badge variant="info">
-                    {expandedEquipo.equipo?.categoria?.nombre}
-                  </Badge>
-                  <Badge variant="default">
-                    {expandedEquipo.equipo?.sede?.nombre}
-                  </Badge>
-                </div>
-
-                {/* Estado operativo */}
-                <div className="flex items-center gap-2 mb-4">
-                  <div className={`w-3 h-3 rounded-full ${
-                    expandedEquipo.resuelto ? 'bg-green-500' :
-                    isUrgente ? 'bg-red-500' : 'bg-amber-500'
-                  }`} />
-                  <span className="text-lg font-medium text-gray-700">
-                    {expandedEquipo.resuelto ? 'Resuelto' :
-                     isUrgente ? 'Urgente' : 'Pendiente'}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Acción Requerida */}
-            <div className="p-4 bg-amber-50 border-l-4 border-amber-400 rounded-r-lg">
-              <div className="flex items-start gap-3">
-                <AlertCircle className="h-6 w-6 text-amber-600 shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-sm font-semibold text-amber-900 mb-2">ACCIÓN REQUERIDA</p>
-                  <p className="text-base text-amber-800 leading-relaxed">
-                    {expandedEquipo.accionRequerida}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Información en cuadrícula */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {expandedEquipo.costoEstimado && (
-                <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                  <DollarSign className="h-6 w-6 text-green-600 shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-medium text-gray-600 mb-1">Costo Estimado</p>
-                    <p className="text-xl font-bold text-gray-900">
-                      {formatCurrency(expandedEquipo.costoEstimado)}
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {expandedEquipo.fechaLimiteAccion && (
-                <div className={`flex items-start gap-3 p-4 rounded-lg border ${
-                  isUrgente ? 'bg-red-50 border-red-300' : 'bg-blue-50 border-blue-200'
-                }`}>
-                  <Clock className={`h-6 w-6 shrink-0 mt-0.5 ${
-                    isUrgente ? 'text-red-600' : 'text-blue-600'
-                  }`} />
-                  <div>
-                    <p className={`text-sm font-medium mb-1 ${
-                      isUrgente ? 'text-red-800' : 'text-blue-800'
-                    }`}>
-                      Fecha Límite
-                    </p>
-                    <p className={`text-xl font-bold ${
-                      isUrgente ? 'text-red-900' : 'text-blue-900'
-                    }`}>
-                      {formatDate(expandedEquipo.fechaLimiteAccion)}
-                    </p>
-                    {diasRestantes !== null && !expandedEquipo.resuelto && (
-                      <p className={`text-sm mt-2 font-medium ${
-                        isUrgente ? 'text-red-700' : 'text-blue-700'
-                      }`}>
-                        {diasRestantes > 0
-                          ? `⏱️ ${diasRestantes} días restantes`
-                          : '⚠️ VENCIDO'}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {expandedEquipo.equipo?.responsable && (
-                <div className="md:col-span-2 flex items-center gap-2 text-base text-gray-700">
-                  <span className="font-medium">👤 Responsable:</span>
-                  <span className="font-semibold text-gray-900">{expandedEquipo.equipo.responsable}</span>
-                </div>
-              )}
-            </div>
-
-            {/* Información adicional */}
-            <div className="text-sm text-gray-500 space-y-1 border-t border-gray-200 pt-4">
-              <p>ID: <span className="font-mono">{expandedEquipo.id}</span></p>
-              <p>Última actividad: {formatDate(expandedEquipo.fechaResolucion || new Date())}</p>
-            </div>
-
-            {/* Notas de resolución si está resuelto */}
-            {expandedEquipo.resuelto && expandedEquipo.notasResolucion && (
-              <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                <p className="text-sm text-green-800 font-medium mb-2">
-                  Resuelto el {expandedEquipo.fechaResolucion ? formatDate(expandedEquipo.fechaResolucion) : 'Fecha desconocida'}
-                </p>
-                <p className="text-base text-green-700">{expandedEquipo.notasResolucion}</p>
-              </div>
-            )}
-
-            {/* Evidencias */}
-            {expandedEquipo.imagenes && expandedEquipo.imagenes.length > 0 && (
-              <div className="p-4 bg-linear-to-br from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
-                <div className="flex items-center justify-between mb-4">
-                  <h4 className="text-lg font-bold text-gray-800 flex items-center gap-2">
-                    <ImageIcon className="h-5 w-5 text-blue-600" />
-                    Evidencias Adjuntas
-                    <Badge variant="info" className="ml-2">
-                      {expandedEquipo.imagenes.length} archivo{expandedEquipo.imagenes.length !== 1 ? 's' : ''}
-                    </Badge>
-                  </h4>
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {expandedEquipo.imagenes.map((url: string, idx: number) => {
-                    const isVideo = url.includes('.mp4') || url.includes('.mov') || url.includes('.webm');
-                    return (
-                      <a
-                        key={idx}
-                        href={url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="group relative aspect-square rounded-lg overflow-hidden border-2 border-blue-200 hover:border-blue-400 hover:shadow-lg transition-all bg-white"
-                      >
-                        {isVideo ? (
-                          <>
-                            <video
-                              src={url}
-                              className="w-full h-full object-cover"
-                              muted
-                            />
-                            <div className="absolute inset-0 flex flex-col items-center justify-center bg-linear-to-t from-black/70 via-black/40 to-transparent group-hover:from-black/80 transition-all">
-                              <Video className="h-12 w-12 text-white mb-2" />
-                              <span className="text-sm text-white font-medium">Video #{idx + 1}</span>
-                            </div>
-                          </>
-                        ) : (
-                          <>
-                            <img
-                              src={url}
-                              alt={`Evidencia ${idx + 1}`}
-                              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                            />
-                            <div className="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded-full font-medium">
-                              #{idx + 1}
-                            </div>
-                          </>
-                        )}
-                        <div className="absolute inset-0 bg-blue-600/0 group-hover:bg-blue-600/10 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
-                          <Eye className="h-8 w-8 text-white drop-shadow-lg" />
-                        </div>
-                      </a>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* Acciones */}
-            <div className="flex flex-wrap gap-3 pt-4 border-t border-gray-200">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setEquipoDetalleSeleccionado(expandedEquipo.equipo);
-                  setIsDetalleModalOpen(true);
-                  setIsExpandedViewOpen(false);
-                }}
-                className="flex-1 sm:flex-none hover:bg-blue-50 hover:border-blue-300 transition-colors"
-              >
-                <Eye className="h-4 w-4 mr-2" />
-                Ver Detalles Técnicos
-              </Button>
-
-              {!expandedEquipo.resuelto && (
+      {/* Modal de Evidencias - MEJORADO */}
+      <Modal
+        isOpen={isEvidenceModalOpen}
+        onClose={() => {
+          setIsEvidenceModalOpen(false);
+          setCurrentEquipo(null);
+          setEvidenceFiles([]);
+          setEvidenceDescription('');
+        }}
+        title="📸 Agregar Evidencias"
+        footer={
+          <div className="flex justify-end gap-3">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsEvidenceModalOpen(false);
+                setCurrentEquipo(null);
+                setEvidenceFiles([]);
+                setEvidenceDescription('');
+              }}
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="primary"
+              onClick={handleUploadEvidence}
+              disabled={uploadingEvidence || evidenceFiles.length === 0}
+            >
+              {uploadingEvidence ? (
                 <>
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setCurrentEquipo(expandedEquipo);
-                      setIsEvidenceModalOpen(true);
-                      setIsExpandedViewOpen(false);
-                    }}
-                    className="flex-1 sm:flex-none border-blue-300 text-blue-700 hover:bg-blue-50 hover:border-blue-400 transition-colors"
-                  >
-                    <ImageIcon className="h-4 w-4 mr-2" />
-                    Agregar Evidencia ({expandedEquipo.imagenes?.length || 0})
-                  </Button>
-                  <Button
-                    variant="success"
-                    onClick={() => {
-                      setResolvingEquipo(expandedEquipo);
-                      setIsResolveModalOpen(true);
-                      setIsExpandedViewOpen(false);
-                    }}
-                    className="flex-1 sm:flex-none shadow-sm hover:shadow-md transition-all"
-                  >
-                    <CheckCircle className="h-4 w-4 mr-2" />
-                    Resolver
-                  </Button>
+                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Subiendo...
+                </>
+              ) : (
+                <>
+                  <ImageIcon className="h-4 w-4 mr-2" />
+                  Subir {evidenceFiles.length} archivo{evidenceFiles.length !== 1 ? 's' : ''}
                 </>
               )}
+            </Button>
+          </div>
+        }
+      >
+        <div className="space-y-5">
+          {/* Info del equipo */}
+          <div className="p-4 bg-linear-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg">
+            <div className="flex items-start gap-3">
+              <div className="p-2 bg-blue-600 rounded-lg">
+                <ImageIcon className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <p className="font-bold text-blue-900">
+                  {currentEquipo?.equipo?.marca} {currentEquipo?.equipo?.modelo}
+                </p>
+                <p className="text-sm text-blue-700">
+                  Serial: {currentEquipo?.equipo?.serial}
+                </p>
+                {currentEquipo?.imagenes && currentEquipo.imagenes.length > 0 && (
+                  <p className="text-xs text-blue-600 mt-1">
+                    Ya tiene {currentEquipo.imagenes.length} evidencia{currentEquipo.imagenes.length !== 1 ? 's' : ''} adjunta{currentEquipo.imagenes.length !== 1 ? 's' : ''}
+                  </p>
+                )}
+              </div>
             </div>
           </div>
-        );
-      })()}
-    </Modal>
-  </div>
-);
+
+          {/* Nota informativa */}
+          <div className="p-3 bg-amber-50 border-l-4 border-amber-400 rounded-r">
+            <p className="text-sm text-amber-800">
+              <strong>ℹ️ Nota:</strong> Agregar evidencias NO marcará el equipo como resuelto.
+              Podrás marcarlo como resuelto posteriormente cuando el problema esté completamente solucionado.
+            </p>
+          </div>
+
+          <Textarea
+            label="Descripción de las evidencias"
+            placeholder="Describe brevemente qué muestran estas evidencias... (opcional)"
+            value={evidenceDescription}
+            onChange={(e) => setEvidenceDescription(e.target.value)}
+            rows={3}
+          />
+
+          <FileUpload
+            onFilesSelected={setEvidenceFiles}
+            maxFiles={10}
+            accept="image/*,video/*"
+            allowCamera={true}
+            allowVideo={true}
+            disabled={uploadingEvidence}
+            label="Archivos"
+            hint="📸 Toma fotos o 🎥 videos, o sube archivos existentes. Máximo 10 archivos de 50MB cada uno."
+          />
+        </div>
+      </Modal>
+
+      {/* Modal de Detalles del Equipo */}
+      <EquipoDetalleModal
+        isOpen={isDetalleModalOpen}
+        onClose={() => {
+          setIsDetalleModalOpen(false);
+          setEquipoDetalleSeleccionado(null);
+        }}
+        equipo={equipoDetalleSeleccionado}
+      />
+
+      {/* Modal de Vista Expandida */}
+      <Modal
+        isOpen={isExpandedViewOpen}
+        onClose={() => {
+          setIsExpandedViewOpen(false);
+          setExpandedEquipo(null);
+        }}
+        title="Detalles del Equipo Crítico"
+        size="xl"
+      >
+        {expandedEquipo && (() => {
+          const diasRestantes = getDiasRestantes(expandedEquipo.fechaLimiteAccion);
+          const isUrgente = diasRestantes !== null && diasRestantes <= 7;
+
+          return (
+            <div className="space-y-6">
+              {/* Header con información esencial */}
+              <div className="flex flex-col md:flex-row gap-6">
+                {/* Indicador de criticidad */}
+                <div className="flex flex-col items-center justify-center p-6 bg-linear-to-br from-gray-50 to-gray-100 rounded-lg min-w-40 border border-gray-200 shadow-sm">
+                  <div
+                    className="w-20 h-20 rounded-full flex items-center justify-center text-white font-bold text-2xl mb-3 shadow-lg ring-4 ring-white"
+                    style={{ backgroundColor: expandedEquipo.nivelPrioridad?.color }}
+                  >
+                    {expandedEquipo.nivelPrioridad?.nombre === 'Alta' ? '🚨' :
+                      expandedEquipo.nivelPrioridad?.nombre === 'Media' ? '⚠️' : '✅'}
+                  </div>
+                  <Badge
+                    color={expandedEquipo.nivelPrioridad?.color}
+                    className="font-semibold text-sm px-3 py-1"
+                  >
+                    {expandedEquipo.nivelPrioridad?.nombre}
+                  </Badge>
+                  <p className="text-xs text-gray-500 mt-2 text-center font-medium">Criticidad</p>
+                </div>
+
+                {/* Información principal */}
+                <div className="flex-1">
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                    {expandedEquipo.equipo?.marca} {expandedEquipo.equipo?.modelo}
+                  </h2>
+                  <p className="text-sm text-gray-600 mb-4">
+                    Serial: <span className="font-mono text-gray-800">{expandedEquipo.equipo?.serial}</span>
+                  </p>
+
+                  {/* Estado y badges */}
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    <Badge color={expandedEquipo.equipo?.estado?.color}>
+                      {expandedEquipo.equipo?.estado?.nombre}
+                    </Badge>
+                    <Badge variant="info">
+                      {expandedEquipo.equipo?.categoria?.nombre}
+                    </Badge>
+                    <Badge variant="default">
+                      {expandedEquipo.equipo?.sede?.nombre}
+                    </Badge>
+                  </div>
+
+                  {/* Estado operativo */}
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className={`w-3 h-3 rounded-full ${expandedEquipo.resuelto ? 'bg-green-500' :
+                        isUrgente ? 'bg-red-500' : 'bg-amber-500'
+                      }`} />
+                    <span className="text-lg font-medium text-gray-700">
+                      {expandedEquipo.resuelto ? 'Resuelto' :
+                        isUrgente ? 'Urgente' : 'Pendiente'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Acción Requerida */}
+              <div className="p-4 bg-amber-50 border-l-4 border-amber-400 rounded-r-lg">
+                <div className="flex items-start gap-3">
+                  <AlertCircle className="h-6 w-6 text-amber-600 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-semibold text-amber-900 mb-2">ACCIÓN REQUERIDA</p>
+                    <p className="text-base text-amber-800 leading-relaxed">
+                      {expandedEquipo.accionRequerida}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Información en cuadrícula */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {expandedEquipo.costoEstimado && (
+                  <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                    <DollarSign className="h-6 w-6 text-green-600 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium text-gray-600 mb-1">Costo Estimado</p>
+                      <p className="text-xl font-bold text-gray-900">
+                        {formatCurrency(expandedEquipo.costoEstimado)}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {expandedEquipo.fechaLimiteAccion && (
+                  <div className={`flex items-start gap-3 p-4 rounded-lg border ${isUrgente ? 'bg-red-50 border-red-300' : 'bg-blue-50 border-blue-200'
+                    }`}>
+                    <Clock className={`h-6 w-6 shrink-0 mt-0.5 ${isUrgente ? 'text-red-600' : 'text-blue-600'
+                      }`} />
+                    <div>
+                      <p className={`text-sm font-medium mb-1 ${isUrgente ? 'text-red-800' : 'text-blue-800'
+                        }`}>
+                        Fecha Límite
+                      </p>
+                      <p className={`text-xl font-bold ${isUrgente ? 'text-red-900' : 'text-blue-900'
+                        }`}>
+                        {formatDate(expandedEquipo.fechaLimiteAccion)}
+                      </p>
+                      {diasRestantes !== null && !expandedEquipo.resuelto && (
+                        <p className={`text-sm mt-2 font-medium ${isUrgente ? 'text-red-700' : 'text-blue-700'
+                          }`}>
+                          {diasRestantes > 0
+                            ? `⏱️ ${diasRestantes} días restantes`
+                            : '⚠️ VENCIDO'}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {expandedEquipo.equipo?.responsable && (
+                  <div className="md:col-span-2 flex items-center gap-2 text-base text-gray-700">
+                    <span className="font-medium">👤 Responsable:</span>
+                    <span className="font-semibold text-gray-900">{expandedEquipo.equipo.responsable}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Información adicional */}
+              <div className="text-sm text-gray-500 space-y-1 border-t border-gray-200 pt-4">
+                <p>ID: <span className="font-mono">{expandedEquipo.id}</span></p>
+                <p>Última actividad: {formatDate(expandedEquipo.fechaResolucion || new Date())}</p>
+              </div>
+
+              {/* Notas de resolución si está resuelto */}
+              {expandedEquipo.resuelto && expandedEquipo.notasResolucion && (
+                <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                  <p className="text-sm text-green-800 font-medium mb-2">
+                    Resuelto el {expandedEquipo.fechaResolucion ? formatDate(expandedEquipo.fechaResolucion) : 'Fecha desconocida'}
+                  </p>
+                  <p className="text-base text-green-700">{expandedEquipo.notasResolucion}</p>
+                </div>
+              )}
+
+              {/* Evidencias */}
+              {expandedEquipo.imagenes && expandedEquipo.imagenes.length > 0 && (
+                <div className="p-4 bg-linear-to-br from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                      <ImageIcon className="h-5 w-5 text-blue-600" />
+                      Evidencias Adjuntas
+                      <Badge variant="info" className="ml-2">
+                        {expandedEquipo.imagenes.length} archivo{expandedEquipo.imagenes.length !== 1 ? 's' : ''}
+                      </Badge>
+                    </h4>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {expandedEquipo.imagenes.map((url: string, idx: number) => {
+                      const isVideo = url.includes('.mp4') || url.includes('.mov') || url.includes('.webm');
+                      return (
+                        <a
+                          key={idx}
+                          href={url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="group relative aspect-square rounded-lg overflow-hidden border-2 border-blue-200 hover:border-blue-400 hover:shadow-lg transition-all bg-white"
+                        >
+                          {isVideo ? (
+                            <>
+                              <video
+                                src={url}
+                                className="w-full h-full object-cover"
+                                muted
+                              />
+                              <div className="absolute inset-0 flex flex-col items-center justify-center bg-linear-to-t from-black/70 via-black/40 to-transparent group-hover:from-black/80 transition-all">
+                                <Video className="h-12 w-12 text-white mb-2" />
+                                <span className="text-sm text-white font-medium">Video #{idx + 1}</span>
+                              </div>
+                            </>
+                          ) : (
+                            <>
+                              <img
+                                src={url}
+                                alt={`Evidencia ${idx + 1}`}
+                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                              />
+                              <div className="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded-full font-medium">
+                                #{idx + 1}
+                              </div>
+                            </>
+                          )}
+                          <div className="absolute inset-0 bg-blue-600/0 group-hover:bg-blue-600/10 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                            <Eye className="h-8 w-8 text-white drop-shadow-lg" />
+                          </div>
+                        </a>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Acciones */}
+              <div className="flex flex-wrap gap-3 pt-4 border-t border-gray-200">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setEquipoDetalleSeleccionado(expandedEquipo.equipo);
+                    setIsDetalleModalOpen(true);
+                    setIsExpandedViewOpen(false);
+                  }}
+                  className="flex-1 sm:flex-none hover:bg-blue-50 hover:border-blue-300 transition-colors"
+                >
+                  <Eye className="h-4 w-4 mr-2" />
+                  Ver Detalles Técnicos
+                </Button>
+
+                {!expandedEquipo.resuelto && (
+                  <>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setCurrentEquipo(expandedEquipo);
+                        setIsEvidenceModalOpen(true);
+                        setIsExpandedViewOpen(false);
+                      }}
+                      className="flex-1 sm:flex-none border-blue-300 text-blue-700 hover:bg-blue-50 hover:border-blue-400 transition-colors"
+                    >
+                      <ImageIcon className="h-4 w-4 mr-2" />
+                      Agregar Evidencia ({expandedEquipo.imagenes?.length || 0})
+                    </Button>
+                    <Button
+                      variant="success"
+                      onClick={() => {
+                        setResolvingEquipo(expandedEquipo);
+                        setIsResolveModalOpen(true);
+                        setIsExpandedViewOpen(false);
+                      }}
+                      className="flex-1 sm:flex-none shadow-sm hover:shadow-md transition-all"
+                    >
+                      <CheckCircle className="h-4 w-4 mr-2" />
+                      Resolver
+                    </Button>
+                  </>
+                )}
+              </div>
+            </div>
+          );
+        })()}
+      </Modal>
+    </div>
+  );
 }

@@ -437,7 +437,7 @@ export default function PlanMantenimientoPage() {
   ];
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Plan de Mantenimiento</h1>
@@ -446,7 +446,7 @@ export default function PlanMantenimientoPage() {
 
       {/* Filtros y acciones */}
       <Card className="mb-6">
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div className="flex gap-2">
             <Button
               size="sm"
@@ -1037,8 +1037,8 @@ export default function PlanMantenimientoPage() {
                                       key={oidx}
                                       {...props}
                                       className={`flex justify-between items-center text-xs p-2 rounded transition-colors border border-transparent ${hasUrl
-                                          ? 'bg-blue-50/50 hover:bg-blue-100 hover:border-blue-200 cursor-pointer group'
-                                          : 'bg-gray-50'
+                                        ? 'bg-blue-50/50 hover:bg-blue-100 hover:border-blue-200 cursor-pointer group'
+                                        : 'bg-gray-50'
                                         }`}
                                     >
                                       <span className={`font-medium ${hasUrl ? 'text-blue-900' : 'text-gray-700'}`}>

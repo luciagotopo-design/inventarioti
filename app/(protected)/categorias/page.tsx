@@ -19,7 +19,7 @@ export default function CategoriasPage() {
   const [error, setError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCategoria, setEditingCategoria] = useState<Categoria | null>(null);
-  
+
   const [formData, setFormData] = useState({
     nombre: '',
     descripcion: '',
@@ -33,9 +33,9 @@ export default function CategoriasPage() {
     try {
       setLoading(true);
       const response = await fetch('/api/categorias');
-      
+
       if (!response.ok) throw new Error('Error al cargar categorías');
-      
+
       const data = await response.json();
       setCategorias(data);
       setError(null);
@@ -49,12 +49,12 @@ export default function CategoriasPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
-      const url = editingCategoria 
+      const url = editingCategoria
         ? `/api/categorias/${editingCategoria.id}`
         : '/api/categorias';
-      
+
       const method = editingCategoria ? 'PUT' : 'POST';
 
       const response = await fetch(url, {
@@ -176,9 +176,9 @@ export default function CategoriasPage() {
   ];
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       {/* Header */}
-      <div className="mb-8 flex justify-between items-center">
+      <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-4xl font-bold text-gray-900 mb-2">Gestión de Categorías</h1>
           <p className="text-lg text-gray-700 font-medium">Administra las categorías de equipos del inventario</p>

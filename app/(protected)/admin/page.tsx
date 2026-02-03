@@ -4,10 +4,10 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { useRouter } from 'next/navigation';
-import { 
-  Shield, 
-  Users, 
-  Settings, 
+import {
+  Shield,
+  Users,
+  Settings,
   Activity,
   ArrowRight,
   UserCog,
@@ -116,7 +116,7 @@ export default function AdminDashboardPage() {
   }
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-4xl font-bold text-gray-900 mb-2 flex items-center gap-3">
@@ -191,20 +191,18 @@ export default function AdminDashboardPage() {
             return (
               <Card
                 key={index}
-                className={`group cursor-pointer transition-all duration-300 hover:shadow-xl border-2 ${
-                  module.disabled
+                className={`group cursor-pointer transition-all duration-300 hover:shadow-xl border-2 ${module.disabled
                     ? 'opacity-60 cursor-not-allowed'
                     : 'hover:scale-105 ' + module.borderColor
-                }`}
+                  }`}
                 onClick={() => !module.disabled && router.push(module.href)}
               >
                 <CardContent className="p-6">
                   <div className="flex items-start gap-4">
                     {/* Icon */}
                     <div
-                      className={`p-3 rounded-xl ${module.bgColor} ${
-                        !module.disabled && 'group-hover:scale-110'
-                      } transition-transform`}
+                      className={`p-3 rounded-xl ${module.bgColor} ${!module.disabled && 'group-hover:scale-110'
+                        } transition-transform`}
                     >
                       <Icon className={`h-8 w-8 ${module.iconColor}`} />
                     </div>

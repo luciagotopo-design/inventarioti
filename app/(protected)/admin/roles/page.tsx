@@ -32,7 +32,7 @@ export default function RolesPage() {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingRol, setEditingRol] = useState<Rol | null>(null);
-  
+
   // Form state
   const [formData, setFormData] = useState({
     nombre: '',
@@ -153,9 +153,9 @@ export default function RolesPage() {
   }
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       {/* Header */}
-      <div className="mb-8 flex items-center justify-between">
+      <div className="mb-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
           <h1 className="text-4xl font-bold text-gray-900 mb-2 flex items-center gap-3">
             <Shield className="h-10 w-10 text-blue-600" />

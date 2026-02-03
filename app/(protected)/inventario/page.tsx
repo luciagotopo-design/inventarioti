@@ -385,7 +385,7 @@ export default function InventarioPage() {
   ];
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-4xl font-bold text-gray-900 mb-2">Inventario General</h1>
@@ -420,7 +420,7 @@ export default function InventarioPage() {
             label="Categoría"
           />
         </div>
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div className="flex gap-3">
             <Button
               variant="secondary"

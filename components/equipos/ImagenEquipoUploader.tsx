@@ -57,6 +57,7 @@ export default function ImagenEquipoUploader({ onAnalisisCompletado, onEquipoExt
     const [analisis, setAnalisis] = useState<AnalisisEquipo | null>(null);
     const [error, setError] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const cameraInputRef = useRef<HTMLInputElement>(null);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -196,30 +197,48 @@ export default function ImagenEquipoUploader({ onAnalisisCompletado, onEquipoExt
                     className="hidden"
                     id="imagen-equipo-input"
                 />
+                <input
+                    ref={cameraInputRef}
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    onChange={handleFileChange}
+                    className="hidden"
+                    id="imagen-equipo-camera"
+                />
 
                 {!previewUrl ? (
-                    <label htmlFor="imagen-equipo-input" className="cursor-pointer block">
-                        <div className="flex flex-col items-center gap-4">
-                            <div className="p-4 bg-blue-100 rounded-full">
-                                <Camera className="w-12 h-12 text-blue-600" />
-                            </div>
-                            <div>
-                                <p className="text-lg font-semibold text-gray-700">
-                                    Toma una foto o sube una imagen del equipo
-                                </p>
-                                <p className="text-sm text-gray-500 mt-2">
-                                    JPG, PNG o WEBP (máximo 10MB)
-                                </p>
-                            </div>
+                    <div className="flex flex-col items-center gap-4">
+                        <div className="p-4 bg-blue-100 rounded-full">
+                            <Camera className="w-12 h-12 text-blue-600" />
+                        </div>
+                        <div>
+                            <p className="text-lg font-semibold text-gray-700">
+                                Toma una foto o sube una imagen del equipo
+                            </p>
+                            <p className="text-sm text-gray-500 mt-2">
+                                JPG, PNG o WEBP (máximo 10MB)
+                            </p>
+                        </div>
+                        <div className="flex flex-col sm:flex-row gap-3 mt-2">
                             <button
                                 type="button"
-                                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center gap-2"
+                                onClick={() => fileInputRef.current?.click()}
+                                className="px-6 py-3 bg-white border-2 border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors font-medium flex items-center gap-2"
                             >
                                 <Upload className="w-5 h-5" />
-                                Seleccionar Imagen
+                                Galería
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => cameraInputRef.current?.click()}
+                                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center gap-2"
+                            >
+                                <Camera className="w-5 h-5" />
+                                Tomar Foto
                             </button>
                         </div>
-                    </label>
+                    </div>
                 ) : (
                     <div className="space-y-4">
                         <div className="relative inline-block">

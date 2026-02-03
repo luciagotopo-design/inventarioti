@@ -187,7 +187,7 @@ export default function ReportesPage() {
   };
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-4xl font-bold text-gray-900 mb-2">📊 Generador de Reportes</h1>
@@ -394,7 +394,7 @@ export default function ReportesPage() {
           </div>
         </div>
 
-        <div className="flex gap-3">
+        <div className="flex flex-col sm:flex-row gap-3">
           <button
             onClick={() => generarReporteMaestro('pdf')}
             disabled={loadingMaestro}

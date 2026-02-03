@@ -34,7 +34,7 @@ export default function AdminUsuariosPage() {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUsuario, setEditingUsuario] = useState<Usuario | null>(null);
-  
+
   // Form state
   const [formData, setFormData] = useState({
     email: '',
@@ -54,10 +54,10 @@ export default function AdminUsuariosPage() {
         fetch('/api/usuarios'),
         fetch('/api/roles'),
       ]);
-      
+
       const usuariosData = await usuariosRes.json();
       const rolesData = await rolesRes.json();
-      
+
       // Asegurar que sean arrays
       setUsuarios(Array.isArray(usuariosData) ? usuariosData : []);
       setRoles(Array.isArray(rolesData) ? rolesData : []);
@@ -175,9 +175,9 @@ export default function AdminUsuariosPage() {
   }
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       {/* Header */}
-      <div className="mb-8 flex items-center justify-between">
+      <div className="mb-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
           <h1 className="text-4xl font-bold text-gray-900 mb-2 flex items-center gap-3">
             <Users className="h-10 w-10 text-blue-600" />
