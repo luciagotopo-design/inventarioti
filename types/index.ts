@@ -85,6 +85,7 @@ export interface PlanMantenimiento {
   costoReal?: number;
   observaciones?: string;
   imagenes?: string[];
+  analisisIa?: any;
   equipo?: InventarioGeneral;
   accion?: AccionMantenimiento;
 }

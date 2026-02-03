@@ -165,6 +165,7 @@ model PlanMantenimiento {
   costoReal             Float?
   imagenes              String[]  @default([]) // Array de URLs de evidencias
   observaciones         String?
+  analisisIA            Json?     // Almacena el análisis completo generado por Gemini
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
 

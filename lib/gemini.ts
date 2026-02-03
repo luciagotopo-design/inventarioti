@@ -17,24 +17,18 @@ let geminiModel: any = null;
 
 if (apiKey) {
   genAI = new GoogleGenerativeAI(apiKey);
-  // Usar gemini-1.5-flash que tiene más cuota gratuita disponible
-  geminiModel = genAI.getGenerativeModel({ 
-    model: 'gemini-1.5-flash'
+  // Usando gemini-flash-latest para mejor disponibilidad de cuota
+  geminiModel = genAI.getGenerativeModel({
+    model: 'gemini-flash-latest'
   });
-  console.log('✅ Modelo Gemini 1.5 Flash inicializado');
 }
 
 export { geminiModel };
 
 /**
  * Genera contenido usando Gemini AI
- * TEMPORALMENTE DESHABILITADO - Cuota excedida
  */
 export async function generarContenidoGemini(prompt: string): Promise<string> {
-  // DESHABILITADO TEMPORALMENTE - Descomentar cuando se restablezca la cuota
-  throw new Error('⚠️ Análisis con IA temporalmente deshabilitado. La funcionalidad estará disponible próximamente.');
-  
-  /* CÓDIGO COMENTADO - DESCOMENTAR CUANDO SE RESTABLEZCA LA CUOTA
   if (!apiKey) {
     throw new Error('Gemini AI no está configurado. Agrega GEMINI_API_KEY y NEXT_PUBLIC_GEMINI_API_KEY en .env.local');
   }
@@ -52,24 +46,22 @@ export async function generarContenidoGemini(prompt: string): Promise<string> {
     return text;
   } catch (error: any) {
     console.error('❌ Error completo:', error);
-    
+
     // Manejar límite de cuota
     if (error?.message?.includes('quota') || error?.status === 429) {
       throw new Error('⏱️ Has alcanzado el límite de solicitudes gratuitas. Espera unos minutos o actualiza tu plan en https://ai.google.dev/pricing');
     }
-    
+
     if (error?.message?.includes('API_KEY_INVALID')) {
       throw new Error('API key inválida. Verifica tu clave en https://aistudio.google.com/apikey');
     }
-    
+
     throw new Error(error?.message || 'Error al generar contenido con Gemini');
   }
-  */
 }
 
 /**
  * Busca precios de repuestos en tiendas online usando Gemini
- * TEMPORALMENTE DESHABILITADO - Cuota excedida
  */
 export async function buscarPreciosConGemini(
   componente: string,
@@ -78,15 +70,6 @@ export async function buscarPreciosConGemini(
   pais: string,
   moneda: string
 ): Promise<any> {
-  // DESHABILITADO TEMPORALMENTE
-  return {
-    componente,
-    busqueda_exitosa: false,
-    error: '⚠️ Búsqueda de precios con IA temporalmente deshabilitada. La funcionalidad estará disponible próximamente.',
-    notas_adicionales: 'Funcionalidad deshabilitada temporalmente por límite de cuota de API.'
-  };
-  
-  /* CÓDIGO COMENTADO - DESCOMENTAR CUANDO SE RESTABLEZCA LA CUOTA
   const prompt = `
 Actúa como un experto en búsqueda de precios y análisis de mercado tecnológico.
 
@@ -150,7 +133,7 @@ FORMATO DE RESPUESTA (JSON):
     if (jsonMatch) {
       return JSON.parse(jsonMatch[0]);
     }
-    
+
     return {
       componente,
       busqueda_exitosa: false,
@@ -165,12 +148,10 @@ FORMATO DE RESPUESTA (JSON):
       error: error instanceof Error ? error.message : 'Error desconocido'
     };
   }
-  */
 }
 
 /**
  * Genera un análisis completo de mantenimiento usando Gemini
- * TEMPORALMENTE DESHABILITADO - Cuota excedida
  */
 export async function generarAnalisisMantenimientoGemini(
   equipoData: {
@@ -187,20 +168,6 @@ export async function generarAnalisisMantenimientoGemini(
   pais: string,
   moneda: string
 ): Promise<any> {
-  // DESHABILITADO TEMPORALMENTE
-  return {
-    error: '⚠️ Análisis de mantenimiento con IA temporalmente deshabilitado. La funcionalidad estará disponible próximamente.',
-    equipo: {
-      tipo: equipoData.tipo,
-      marca: equipoData.marca,
-      modelo: equipoData.modelo,
-      antiguedad_anios: equipoData.antiguedad_anios,
-      estado: equipoData.estado
-    },
-    notas_adicionales: 'Funcionalidad deshabilitada temporalmente por límite de cuota de API.'
-  };
-  
-  /* CÓDIGO COMENTADO - DESCOMENTAR CUANDO SE RESTABLEZCA LA CUOTA
   const prompt = `Actúa como un SISTEMA EXPERTO EN MANTENIMIENTO DE EQUIPOS TI.
 
 INFORMACIÓN DEL EQUIPO:
@@ -219,7 +186,7 @@ Genera un análisis completo en formato JSON con diagnóstico, planes de manteni
     if (jsonMatch) {
       return JSON.parse(jsonMatch[0]);
     }
-    
+
     return {
       error: 'No se pudo parsear la respuesta como JSON',
       respuesta_texto: resultado
@@ -228,5 +195,4 @@ Genera un análisis completo en formato JSON con diagnóstico, planes de manteni
     console.error('Error en análisis con Gemini:', error);
     throw error;
   }
-  */
 }
