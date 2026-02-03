@@ -7,7 +7,7 @@ import { mapSupabaseToFrontend } from '@/lib/utils';
 export async function GET(request: NextRequest) {
   console.log('\n🔵 [API] GET /api/equipos-criticos - Iniciando consulta...');
   const startTime = Date.now();
-  
+
   try {
     const { searchParams } = new URL(request.url);
     const resueltos = searchParams.get('resueltos') === 'true';
@@ -26,7 +26,8 @@ export async function GET(request: NextRequest) {
         nivelPrioridad:prioridades(id, nombre, color, orden)
       `)
       .eq('resuelto', resueltos)
-      .order('fecha_limite_accion', { ascending: true });
+      .order('fecha_limite_accion', { ascending: true })
+      .limit(1000); // 🔧 Traer hasta 1000 equipos (sin límite por defecto)
 
     if (prioridadId) {
       query = query.eq('nivel_prioridad_id', prioridadId);
@@ -54,7 +55,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    
+
     const {
       idEquipo,
       nivelPrioridadId,

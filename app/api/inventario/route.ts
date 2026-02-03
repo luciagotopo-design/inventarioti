@@ -7,7 +7,7 @@ import { mapSupabaseToFrontend, syncEquipoCritico } from '@/lib/utils';
 export async function GET(request: NextRequest) {
   console.log('\n🔵 [API] GET /api/inventario - Iniciando consulta...');
   const startTime = Date.now();
-  
+
   try {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
@@ -91,11 +91,11 @@ export async function GET(request: NextRequest) {
 // POST - Crear nuevo equipo
 export async function POST(request: NextRequest) {
   console.log('\n🔵 [API] POST /api/inventario - Creando equipo...');
-  
+
   try {
     const body = await request.json();
     console.log('📝 Datos recibidos:', { serial: body.serial, marca: body.marca, modelo: body.modelo });
-    
+
     const {
       serial,
       marca,
@@ -110,13 +110,12 @@ export async function POST(request: NextRequest) {
       observaciones,
     } = body;
 
-    // Validar campos requeridos
-    if (!serial || !marca || !modelo || !categoriaId || !estadoId || !sedeId) {
+    // Validar campos requeridos (serial ahora es opcional)
+    if (!marca || !modelo || !categoriaId || !estadoId || !sedeId) {
       return NextResponse.json(
-        { 
+        {
           error: 'Campos requeridos faltantes',
           details: {
-            serial: !serial ? 'requerido' : 'ok',
             marca: !marca ? 'requerido' : 'ok',
             modelo: !modelo ? 'requerido' : 'ok',
             categoriaId: !categoriaId ? 'requerido' : 'ok',
@@ -128,18 +127,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validar serial único
-    const { data: existente } = await supabase
-      .from('inventario_general')
-      .select('id')
-      .eq('serial', serial)
-      .single();
+    // Validar serial único (solo si se proporciona serial)
+    if (serial) {
+      const { data: existente } = await supabase
+        .from('inventario_general')
+        .select('id')
+        .eq('serial', serial)
+        .single();
 
-    if (existente) {
-      return NextResponse.json(
-        { error: 'El número de serie ya existe' },
-        { status: 400 }
-      );
+      if (existente) {
+        return NextResponse.json(
+          { error: 'El número de serie ya existe' },
+          { status: 400 }
+        );
+      }
     }
 
     const { data: equipo, error } = await supabase

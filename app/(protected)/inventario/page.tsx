@@ -13,9 +13,10 @@ import Textarea from '@/components/ui/Textarea';
 import FileUpload from '@/components/ui/FileUpload';
 import AnalisisMantenimientoModal from '@/components/modals/AnalisisMantenimientoModal';
 import EquipoDetalleModal from '@/components/modals/EquipoDetalleModal';
+import AgregarEquipoConIA from '@/components/equipos/AgregarEquipoConIA';
 import { InventarioGeneral, Categoria, Estado, Sede } from '@/types';
 import { uploadMultipleFiles, deleteMultipleFiles } from '@/lib/storage';
-import { ImageIcon, Video, X } from 'lucide-react';
+import { ImageIcon, Video, X, Sparkles } from 'lucide-react';
 
 interface Maestros {
   categorias: Categoria[];
@@ -32,22 +33,26 @@ export default function InventarioPage() {
   const [uploadingExcel, setUploadingExcel] = useState(false);
   const [analisisEquipoId, setAnalisisEquipoId] = useState<string | null>(null);
   const [analisisSerial, setAnalisisSerial] = useState<string>('');
-  
+
   // Estado para modal de detalles
   const [equipoSeleccionado, setEquipoSeleccionado] = useState<InventarioGeneral | null>(null);
   const [isDetalleModalOpen, setIsDetalleModalOpen] = useState(false);
-  
+
+  // Estado para modal de AI
+  const [isModalIAOpen, setIsModalIAOpen] = useState(false);
+
+
   // Estado para imágenes
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [uploadingImages, setUploadingImages] = useState(false);
   const [existingImages, setExistingImages] = useState<string[]>([]);
-  
+
   // Filtros y búsqueda
   const [search, setSearch] = useState('');
   const [sedeFilter, setSedeFilter] = useState('');
   const [estadoFilter, setEstadoFilter] = useState('');
   const [categoriaFilter, setCategoriaFilter] = useState('');
-  
+
   // Paginación
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -80,11 +85,11 @@ export default function InventarioPage() {
     try {
       const response = await fetch('/api/maestros');
       console.log(`\ud83d\udcca Maestros response status: ${response.status}`);
-      
+
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
       }
-      
+
       const data = await response.json();
       console.log(`\u2705 Maestros cargados - Categor\u00edas: ${data.categorias?.length}, Estados: ${data.estados?.length}, Sedes: ${data.sedes?.length}\n`);
       setMaestros(data);
@@ -96,7 +101,7 @@ export default function InventarioPage() {
   const fetchEquipos = async () => {
     console.log('\n\ud83d\udd35 [INVENTARIO] Cargando equipos...');
     const startTime = Date.now();
-    
+
     try {
       setLoading(true);
       const params = new URLSearchParams({
@@ -111,14 +116,14 @@ export default function InventarioPage() {
       console.log(`\ud83d\udd0d Consultando /api/inventario?${params}`);
       const response = await fetch(`/api/inventario?${params}`);
       console.log(`\ud83d\udcca Response status: ${response.status}`);
-      
+
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
       }
-      
+
       const data = await response.json();
       const duration = Date.now() - startTime;
-      
+
       console.log(`\u2705 Equipos cargados en ${duration}ms - ${data.equipos?.length} equipos de ${data.total} totales\n`);
       setEquipos(data.equipos);
       setTotalPages(data.totalPages);
@@ -131,10 +136,10 @@ export default function InventarioPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       setUploadingImages(true);
-      
+
       // Subir nuevas imágenes si las hay
       let uploadedUrls: string[] = [...existingImages];
       if (imageFiles.length > 0) {
@@ -145,17 +150,17 @@ export default function InventarioPage() {
           ...results.map(r => typeof r === 'string' ? r : r.url).filter((url): url is string => typeof url === 'string' && url !== undefined)
         ];
       }
-      
+
       // Agregar URLs de imágenes al formData
       const dataToSubmit = {
         ...formData,
         imagenes: uploadedUrls,
       };
-      
-      const url = editingEquipo 
+
+      const url = editingEquipo
         ? `/api/inventario/${editingEquipo.id}`
         : '/api/inventario';
-      
+
       const method = editingEquipo ? 'PUT' : 'POST';
 
       const response = await fetch(url, {
@@ -259,23 +264,23 @@ export default function InventarioPage() {
       });
 
       const result = await response.json();
-      
+
       if (response.ok) {
         let mensaje = `✅ Importación exitosa!\n\n`;
         mensaje += `📊 Total procesado: ${result.total}\n`;
         mensaje += `➕ Creados: ${result.creados}\n`;
         mensaje += `✏️ Actualizados: ${result.actualizados}\n`;
         mensaje += `❌ Errores: ${result.errores}`;
-        
+
         if (result.detalles && result.detalles.length > 0) {
           mensaje += '\n\n📝 Detalles:\n';
-          mensaje += result.detalles.map((d: any) => 
-            d.error 
-              ? `❌ Fila ${d.fila} (${d.serial}): ${d.error}` 
+          mensaje += result.detalles.map((d: any) =>
+            d.error
+              ? `❌ Fila ${d.fila} (${d.serial}): ${d.error}`
               : `✅ Fila ${d.fila} (${d.serial}): ${d.estado}`
           ).join('\n');
         }
-        
+
         alert(mensaje);
         fetchEquipos();
         e.target.value = ''; // Limpiar input
@@ -349,17 +354,17 @@ export default function InventarioPage() {
       header: 'Acciones',
       render: (equipo: InventarioGeneral) => (
         <div className="flex gap-2">
-          <Button 
-            size="sm" 
+          <Button
+            size="sm"
             variant="outline"
             onClick={() => handleVerDetalles(equipo)}
             title="Ver detalles completos"
           >
             👁️ Ver
           </Button>
-          <Button 
-            size="sm" 
-            variant="outline" 
+          <Button
+            size="sm"
+            variant="outline"
             onClick={() => {
               setAnalisisEquipoId(equipo.id);
               setAnalisisSerial(equipo.serial);
@@ -383,309 +388,331 @@ export default function InventarioPage() {
     <div className="p-8">
       {/* Header */}
       <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Inventario General</h1>
-          <p className="text-lg text-gray-700 font-medium">Gestión completa del inventario de equipos</p>
-        </div>
+        <h1 className="text-4xl font-bold text-gray-900 mb-2">Inventario General</h1>
+        <p className="text-lg text-gray-700 font-medium">Gestión completa del inventario de equipos</p>
+      </div>
 
-        {/* Filtros y acciones */}
-        <Card>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-            <Input
-              placeholder="Buscar por serial, marca..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              label="Búsqueda"
-            />
-            <Select
-              options={maestros.sedes.map(s => ({ value: s.id, label: s.nombre }))}
-              value={sedeFilter}
-              onChange={(e) => setSedeFilter(e.target.value)}
-              label="Sede"
-            />
-            <Select
-              options={maestros.estados.map(e => ({ value: e.id, label: e.nombre }))}
-              value={estadoFilter}
-              onChange={(e) => setEstadoFilter(e.target.value)}
-              label="Estado"
-            />
-            <Select
-              options={maestros.categorias.map(c => ({ value: c.id, label: c.nombre }))}
-              value={categoriaFilter}
-              onChange={(e) => setCategoriaFilter(e.target.value)}
-              label="Categoría"
-            />
-          </div>
-          <div className="flex justify-between items-center">
-            <div className="flex gap-3">
+      {/* Filtros y acciones */}
+      <Card>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+          <Input
+            placeholder="Buscar por serial, marca..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            label="Búsqueda"
+          />
+          <Select
+            options={maestros.sedes.map(s => ({ value: s.id, label: s.nombre }))}
+            value={sedeFilter}
+            onChange={(e) => setSedeFilter(e.target.value)}
+            label="Sede"
+          />
+          <Select
+            options={maestros.estados.map(e => ({ value: e.id, label: e.nombre }))}
+            value={estadoFilter}
+            onChange={(e) => setEstadoFilter(e.target.value)}
+            label="Estado"
+          />
+          <Select
+            options={maestros.categorias.map(c => ({ value: c.id, label: c.nombre }))}
+            value={categoriaFilter}
+            onChange={(e) => setCategoriaFilter(e.target.value)}
+            label="Categoría"
+          />
+        </div>
+        <div className="flex justify-between items-center">
+          <div className="flex gap-3">
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setSearch('');
+                setSedeFilter('');
+                setEstadoFilter('');
+                setCategoriaFilter('');
+              }}
+            >
+              Limpiar Filtros
+            </Button>
+
+            <label className="inline-flex items-center">
+              <input
+                type="file"
+                accept=".xlsx,.xls"
+                onChange={handleExcelUpload}
+                disabled={uploadingExcel}
+                className="hidden"
+                id="excel-upload"
+              />
               <Button
-                variant="secondary"
-                onClick={() => {
-                  setSearch('');
-                  setSedeFilter('');
-                  setEstadoFilter('');
-                  setCategoriaFilter('');
-                }}
+                variant="outline"
+                onClick={() => (document.getElementById('excel-upload') as HTMLInputElement)?.click()}
+                disabled={uploadingExcel}
               >
-                Limpiar Filtros
+                {uploadingExcel ? '⏳ Importando...' : '📊 Importar Excel'}
               </Button>
-              
-              <label className="inline-flex items-center">
-                <input
-                  type="file"
-                  accept=".xlsx,.xls"
-                  onChange={handleExcelUpload}
-                  disabled={uploadingExcel}
-                  className="hidden"
-                  id="excel-upload"
-                />
-                <Button
-                  variant="outline"
-                  onClick={() => (document.getElementById('excel-upload') as HTMLInputElement)?.click()}
-                  disabled={uploadingExcel}
-                >
-                  {uploadingExcel ? '⏳ Importando...' : '📊 Importar Excel'}
-                </Button>
-              </label>
-            </div>
-            <Button onClick={() => setIsModalOpen(true)}>
-              + Nuevo Equipo
+            </label>
+          </div>
+          <div className="flex gap-3">
+            <Button
+              onClick={() => setIsModalIAOpen(true)}
+              variant="primary"
+              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg"
+            >
+              <Sparkles className="w-4 h-4 mr-2" />
+              ✨ Agregar con IA
+            </Button>
+            <Button onClick={() => setIsModalOpen(true)} variant="outline">
+              + Manual
             </Button>
           </div>
-        </Card>
+        </div>
+      </Card>
 
-        {/* Tabla */}
-        <Card>
-          {loading ? (
-            <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+      {/* Tabla */}
+      <Card>
+        {loading ? (
+          <div className="text-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+          </div>
+        ) : (
+          <>
+            <Table data={equipos} columns={columns} />
+
+            {/* Paginación */}
+            <div className="flex justify-between items-center mt-4 pt-4 border-t">
+              <p className="text-sm text-gray-600">
+                Página {currentPage} de {totalPages}
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage(p => p - 1)}
+                >
+                  Anterior
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={currentPage === totalPages}
+                  onClick={() => setCurrentPage(p => p + 1)}
+                >
+                  Siguiente
+                </Button>
+              </div>
             </div>
-          ) : (
-            <>
-              <Table data={equipos} columns={columns} />
-              
-              {/* Paginación */}
-              <div className="flex justify-between items-center mt-4 pt-4 border-t">
-                <p className="text-sm text-gray-600">
-                  Página {currentPage} de {totalPages}
-                </p>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={currentPage === 1}
-                    onClick={() => setCurrentPage(p => p - 1)}
-                  >
-                    Anterior
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={currentPage === totalPages}
-                    onClick={() => setCurrentPage(p => p + 1)}
-                  >
-                    Siguiente
-                  </Button>
+          </>
+        )}
+      </Card>
+
+      {/* Modal de formulario */}
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          resetForm();
+        }}
+        title={editingEquipo ? 'Editar Equipo' : 'Nuevo Equipo'}
+        size="lg"
+        footer={
+          <div className="flex justify-end gap-3">
+            <Button variant="outline" onClick={() => {
+              setIsModalOpen(false);
+              resetForm();
+            }}>
+              Cancelar
+            </Button>
+            <Button onClick={handleSubmit} disabled={uploadingImages}>
+              {uploadingImages ? 'Subiendo...' : (editingEquipo ? 'Actualizar' : 'Crear')}
+            </Button>
+          </div>
+        }
+      >
+        <form onSubmit={handleSubmit} className="space-y-5">
+          {/* Información básica */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Input
+              label="Número de Serie/Etiqueta"
+              value={formData.serial}
+              onChange={(e) => setFormData({ ...formData, serial: e.target.value })}
+              placeholder="eda3IJASD"
+            />
+            <Input
+              label="Marca *"
+              value={formData.marca}
+              onChange={(e) => setFormData({ ...formData, marca: e.target.value })}
+              placeholder="edaDD"
+              required
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Input
+              label="Modelo *"
+              value={formData.modelo}
+              onChange={(e) => setFormData({ ...formData, modelo: e.target.value })}
+              required
+            />
+            <Select
+              label="Categoría *"
+              options={maestros.categorias.map(c => ({ value: c.id, label: c.nombre }))}
+              value={formData.categoriaId}
+              onChange={(e) => setFormData({ ...formData, categoriaId: e.target.value })}
+              required
+            />
+          </div>
+
+          {/* Ubicación y estado */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Select
+              label="Estado *"
+              options={maestros.estados.map(e => ({ value: e.id, label: e.nombre }))}
+              value={formData.estadoId}
+              onChange={(e) => setFormData({ ...formData, estadoId: e.target.value })}
+              required
+            />
+            <Select
+              label="Sede *"
+              options={maestros.sedes.map(s => ({ value: s.id, label: s.nombre }))}
+              value={formData.sedeId}
+              onChange={(e) => setFormData({ ...formData, sedeId: e.target.value })}
+              required
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Input
+              label="Ubicación Detallada"
+              value={formData.ubicacionDetallada}
+              onChange={(e) => setFormData({ ...formData, ubicacionDetallada: e.target.value })}
+            />
+            <Input
+              label="Responsable"
+              value={formData.responsable}
+              onChange={(e) => setFormData({ ...formData, responsable: e.target.value })}
+            />
+          </div>
+
+          {/* Mantenimiento */}
+          <div className="grid grid-cols-1">
+            <Textarea
+              label="Observaciones"
+              value={formData.observaciones}
+              onChange={(e) => setFormData({ ...formData, observaciones: e.target.value })}
+              rows={4}
+            />
+          </div>
+
+          {/* Imágenes y evidencias */}
+          <div className="space-y-4 pt-4 border-t">
+            <h4 className="text-sm font-medium text-gray-900 flex items-center gap-2">
+              <ImageIcon className="h-4 w-4" />
+              Imágenes y Videos del Equipo
+            </h4>
+
+            {/* Imágenes existentes */}
+            {existingImages.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-sm text-gray-600">Imágenes actuales:</p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                  {existingImages.map((url, index) => {
+                    const isVideo = url.match(/\.(mp4|mov|webm)$/i);
+                    return (
+                      <div key={index} className="relative group">
+                        {isVideo ? (
+                          <video
+                            src={url}
+                            className="w-full h-24 object-cover rounded-lg"
+                            controls
+                          />
+                        ) : (
+                          <img
+                            src={url}
+                            alt={`Imagen ${index + 1}`}
+                            className="w-full h-24 object-cover rounded-lg"
+                          />
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveExistingImage(url)}
+                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                        {isVideo && (
+                          <div className="absolute bottom-1 left-1 bg-blue-500 text-white px-1.5 py-0.5 rounded text-xs flex items-center gap-1">
+                            <Video className="h-3 w-3" />
+                            Video
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
-            </>
-          )}
-        </Card>
+            )}
 
-        {/* Modal de formulario */}
-        <Modal
-          isOpen={isModalOpen}
-          onClose={() => {
-            setIsModalOpen(false);
-            resetForm();
-          }}
-          title={editingEquipo ? 'Editar Equipo' : 'Nuevo Equipo'}
-          size="lg"
-          footer={
-            <div className="flex justify-end gap-3">
-              <Button variant="outline" onClick={() => {
-                setIsModalOpen(false);
-                resetForm();
-              }}>
-                Cancelar
-              </Button>
-              <Button onClick={handleSubmit} disabled={uploadingImages}>
-                {uploadingImages ? 'Subiendo...' : (editingEquipo ? 'Actualizar' : 'Crear')}
-              </Button>
-            </div>
-          }
-        >
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Información básica */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input
-                label="Número de Serie/Etiqueta *"
-                value={formData.serial}
-                onChange={(e) => setFormData({ ...formData, serial: e.target.value })}
-                placeholder="eda3IJASD"
-                required
-              />
-              <Input
-                label="Marca *"
-                value={formData.marca}
-                onChange={(e) => setFormData({ ...formData, marca: e.target.value })}
-                placeholder="edaDD"
-                required
-              />
-            </div>
+            {/* Upload de nuevas imágenes */}
+            <FileUpload
+              onFilesSelected={setImageFiles}
+              maxFiles={10}
+              allowCamera={true}
+              allowVideo={true}
+              label="Agregar nuevas imágenes/videos"
+              hint="Máximo 10 archivos, 50MB cada uno"
+            />
+          </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input
-                label="Modelo *"
-                value={formData.modelo}
-                onChange={(e) => setFormData({ ...formData, modelo: e.target.value })}
-                required
-              />
-              <Select
-                label="Categoría *"
-                options={maestros.categorias.map(c => ({ value: c.id, label: c.nombre }))}
-                value={formData.categoriaId}
-                onChange={(e) => setFormData({ ...formData, categoriaId: e.target.value })}
-                required
-              />
-            </div>
+          {/* Equipo crítico */}
+          <div className="flex items-center pt-2">
+            <input
+              type="checkbox"
+              id="esCritico"
+              checked={formData.esCritico}
+              onChange={(e) => setFormData({ ...formData, esCritico: e.target.checked })}
+              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            />
+            <label htmlFor="esCritico" className="ml-2 text-sm font-medium text-gray-700">
+              Marcar como equipo crítico
+            </label>
+          </div>
+        </form>
+      </Modal>
 
-            {/* Ubicación y estado */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Select
-                label="Estado *"
-                options={maestros.estados.map(e => ({ value: e.id, label: e.nombre }))}
-                value={formData.estadoId}
-                onChange={(e) => setFormData({ ...formData, estadoId: e.target.value })}
-                required
-              />
-              <Select
-                label="Sede *"
-                options={maestros.sedes.map(s => ({ value: s.id, label: s.nombre }))}
-                value={formData.sedeId}
-                onChange={(e) => setFormData({ ...formData, sedeId: e.target.value })}
-                required
-              />
-            </div>
+      {/* Modal de Análisis Inteligente */}
+      <AnalisisMantenimientoModal
+        isOpen={!!analisisEquipoId}
+        onClose={() => {
+          setAnalisisEquipoId(null);
+          setAnalisisSerial('');
+        }}
+        equipoId={analisisEquipoId || ''}
+        equipoSerial={analisisSerial}
+      />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input
-                label="Ubicación Detallada"
-                value={formData.ubicacionDetallada}
-                onChange={(e) => setFormData({ ...formData, ubicacionDetallada: e.target.value })}
-              />
-              <Input
-                label="Responsable"
-                value={formData.responsable}
-                onChange={(e) => setFormData({ ...formData, responsable: e.target.value })}
-              />
-            </div>
+      {/* Modal de Detalles del Equipo */}
+      <EquipoDetalleModal
+        isOpen={isDetalleModalOpen}
+        onClose={() => {
+          setIsDetalleModalOpen(false);
+          setEquipoSeleccionado(null);
+        }}
+        equipo={equipoSeleccionado}
+      />
 
-            {/* Mantenimiento */}
-            <div className="grid grid-cols-1">
-              <Textarea
-                label="Observaciones"
-                value={formData.observaciones}
-                onChange={(e) => setFormData({ ...formData, observaciones: e.target.value })}
-                rows={4}
-              />
-            </div>
-
-            {/* Imágenes y evidencias */}
-            <div className="space-y-4 pt-4 border-t">
-              <h4 className="text-sm font-medium text-gray-900 flex items-center gap-2">
-                <ImageIcon className="h-4 w-4" />
-                Imágenes y Videos del Equipo
-              </h4>
-              
-              {/* Imágenes existentes */}
-              {existingImages.length > 0 && (
-                <div className="space-y-2">
-                  <p className="text-sm text-gray-600">Imágenes actuales:</p>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                    {existingImages.map((url, index) => {
-                      const isVideo = url.match(/\.(mp4|mov|webm)$/i);
-                      return (
-                        <div key={index} className="relative group">
-                          {isVideo ? (
-                            <video
-                              src={url}
-                              className="w-full h-24 object-cover rounded-lg"
-                              controls
-                            />
-                          ) : (
-                            <img
-                              src={url}
-                              alt={`Imagen ${index + 1}`}
-                              className="w-full h-24 object-cover rounded-lg"
-                            />
-                          )}
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveExistingImage(url)}
-                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                          >
-                            <X className="h-4 w-4" />
-                          </button>
-                          {isVideo && (
-                            <div className="absolute bottom-1 left-1 bg-blue-500 text-white px-1.5 py-0.5 rounded text-xs flex items-center gap-1">
-                              <Video className="h-3 w-3" />
-                              Video
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-              
-              {/* Upload de nuevas imágenes */}
-              <FileUpload
-                onFilesSelected={setImageFiles}
-                maxFiles={10}
-                allowCamera={true}
-                allowVideo={true}
-                label="Agregar nuevas imágenes/videos"
-                hint="Máximo 10 archivos, 50MB cada uno"
-              />
-            </div>
-
-            {/* Equipo crítico */}
-            <div className="flex items-center pt-2">
-              <input
-                type="checkbox"
-                id="esCritico"
-                checked={formData.esCritico}
-                onChange={(e) => setFormData({ ...formData, esCritico: e.target.checked })}
-                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-              />
-              <label htmlFor="esCritico" className="ml-2 text-sm font-medium text-gray-700">
-                Marcar como equipo crítico
-              </label>
-            </div>
-          </form>
-        </Modal>
-
-        {/* Modal de Análisis Inteligente */}
-        <AnalisisMantenimientoModal
-          isOpen={!!analisisEquipoId}
-          onClose={() => {
-            setAnalisisEquipoId(null);
-            setAnalisisSerial('');
-          }}
-          equipoId={analisisEquipoId || ''}
-          equipoSerial={analisisSerial}
-        />
-
-        {/* Modal de Detalles del Equipo */}
-        <EquipoDetalleModal
-          isOpen={isDetalleModalOpen}
-          onClose={() => {
-            setIsDetalleModalOpen(false);
-            setEquipoSeleccionado(null);
-          }}
-          equipo={equipoSeleccionado}
-        />
-      </div>
+      {/* Modal de Agregar Equipo con IA */}
+      <AgregarEquipoConIA
+        isOpen={isModalIAOpen}
+        onClose={() => setIsModalIAOpen(false)}
+        onEquipoCreado={() => {
+          setIsModalIAOpen(false);
+          fetchEquipos();
+        }}
+        categorias={maestros.categorias}
+        estados={maestros.estados}
+        sedes={maestros.sedes}
+      />
+    </div>
   );
 }

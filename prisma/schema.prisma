@@ -94,7 +94,7 @@ model AccionMantenimiento {
 
 model InventarioGeneral {
   id                 String    @id @default(uuid())
-  serial             String    @unique // Número de serie o etiqueta única
+  serial             String    // Número de serie o etiqueta (permite duplicados)
   cantidad           Int       @default(1)
   marca              String
   modelo             String

@@ -4,9 +4,10 @@ import ExcelJS from 'exceljs';
 import path from 'path';
 import fs from 'fs';
 
+// Usar SERVICE_ROLE_KEY para tener permisos completos (bypass RLS)
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
 interface EquipoCritico {
@@ -53,7 +54,8 @@ export async function POST(request: Request) {
         estado:estados(id, nombre, color),
         sede:sedes(id, nombre)
       `)
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .limit(1000); // 🔧 Traer hasta 1000 equipos
     console.log('Equipos response:', equiposRes.error ? equiposRes.error : `${equiposRes.data?.length} equipos`);
 
     const mantenimientosRes = await supabase
@@ -63,7 +65,8 @@ export async function POST(request: Request) {
         equipo:inventario_general(id, serial, marca, modelo),
         accion:acciones_mantenimiento(id, nombre)
       `)
-      .order('fecha_programada', { ascending: true });
+      .order('fecha_programada', { ascending: true })
+      .limit(1000); // 🔧 Traer hasta 1000 mantenimientos
     console.log('Mantenimientos response:', mantenimientosRes.error ? mantenimientosRes.error : `${mantenimientosRes.data?.length} mantenimientos`);
 
     const criticosRes = await supabase
@@ -79,7 +82,8 @@ export async function POST(request: Request) {
         nivelPrioridad:prioridades(id, nombre, color, orden)
       `)
       .eq('resuelto', false)
-      .order('fecha_limite_accion', { ascending: true });
+      .order('fecha_limite_accion', { ascending: true })
+      .limit(1000); // 🔧 Traer hasta 1000 críticos
     console.log('Críticos response:', criticosRes.error ? criticosRes.error : `${criticosRes.data?.length} críticos`);
 
     const equipos = equiposRes.data || [];
@@ -566,12 +570,7 @@ async function generarReporteMaestroExcel(
 
       const mantenimientosData = mantenimientosCompletos || mantenimientos;
 
-      // Headers para nuevas columnas IA
-      const headerRow = mantenimientoSheet.getRow(1);
-      headerRow.getCell(7).value = 'Evaluación IA';
-      headerRow.getCell(8).value = 'Procedimiento Sugerido';
-      headerRow.getCell(9).value = 'Repuestos y Costos';
-      headerRow.commit();
+      // No agregar columnas de IA (removidas por solicitud del usuario)
 
       mantenimientosData.forEach((m, index) => {
         const fila = mantenimientoSheet.getRow(filaInicio + index);
@@ -592,48 +591,7 @@ async function generarReporteMaestroExcel(
         fila.getCell(5).value = m.estado_ejecucion || 'Pendiente';
         fila.getCell(6).value = m.presupuesto ? `$${m.presupuesto.toLocaleString()}` : '';
 
-        // --- DATOS IA ---
-        let evaluacionStr = '';
-        let procedimientoStr = '';
-        let repuestosStr = '';
-
-        if (m.analisis_ia) {
-          const ia = m.analisis_ia;
-
-          // 1. Evaluación
-          if (ia.evaluacion_plan) {
-            evaluacionStr = `Adecuación: ${ia.evaluacion_plan.adecuacion || 'N/A'}\n${ia.evaluacion_plan.observaciones || ''}`;
-          }
-
-          // 2. Procedimiento
-          if (ia.procedimiento_optimizado && Array.isArray(ia.procedimiento_optimizado)) {
-            procedimientoStr = ia.procedimiento_optimizado
-              .map((p: any) => `${p.paso}. ${p.descripcion}`)
-              .join('\n');
-          }
-
-          // 3. Repuestos
-          if (ia.componentes_necesarios && Array.isArray(ia.componentes_necesarios)) {
-            repuestosStr = ia.componentes_necesarios.map((c: any) => {
-              let info = `• ${c.componente} (${c.prioridad || '-'})`;
-              if (c.opciones_compra && c.opciones_compra.length > 0) {
-                const bestOption = c.opciones_compra[0];
-                const precio = bestOption.precio_total ? `$${bestOption.precio_total.toLocaleString()}` : 'Consultar';
-                info += ` - ${bestOption.tienda}: ${precio}`;
-              }
-              return info;
-            }).join('\n');
-          }
-        }
-
-        fila.getCell(7).value = evaluacionStr;
-        fila.getCell(7).alignment = { wrapText: true, vertical: 'top' };
-
-        fila.getCell(8).value = procedimientoStr;
-        fila.getCell(8).alignment = { wrapText: true, vertical: 'top' };
-
-        fila.getCell(9).value = repuestosStr;
-        fila.getCell(9).alignment = { wrapText: true, vertical: 'top' };
+        // Columnas de IA removidas (ya no se incluyen)
 
         fila.commit();
       });
