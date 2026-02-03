@@ -29,12 +29,12 @@ export async function POST(request: Request) {
       const protocol = request.url.includes('localhost') ? 'http' : 'https';
       const host = request.headers.get('host') || 'localhost:3000';
       const baseUrl = `${protocol}://${host}`;
-      
+
       const syncResponse = await fetch(`${baseUrl}/api/equipos-criticos/sincronizar`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       });
-      
+
       if (syncResponse.ok) {
         const syncResult = await syncResponse.json();
         console.log('✅ Sincronización completada:', syncResult.stats);
@@ -55,7 +55,7 @@ export async function POST(request: Request) {
       `)
       .order('created_at', { ascending: false });
     console.log('Equipos response:', equiposRes.error ? equiposRes.error : `${equiposRes.data?.length} equipos`);
-    
+
     const mantenimientosRes = await supabase
       .from('plan_mantenimiento')
       .select(`
@@ -65,7 +65,7 @@ export async function POST(request: Request) {
       `)
       .order('fecha_programada', { ascending: true });
     console.log('Mantenimientos response:', mantenimientosRes.error ? mantenimientosRes.error : `${mantenimientosRes.data?.length} mantenimientos`);
-    
+
     const criticosRes = await supabase
       .from('equipos_criticos')
       .select(`
@@ -102,7 +102,7 @@ export async function POST(request: Request) {
       console.log('📝 Generando archivo Excel...');
       const excelBuffer = await generarReporteMaestroExcel(equipos, mantenimientos, criticos, analisisMaestro);
       console.log('✅ Excel generado, tamaño:', excelBuffer.length, 'bytes');
-      
+
       return new NextResponse(excelBuffer as BodyInit, {
         headers: {
           'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -114,7 +114,7 @@ export async function POST(request: Request) {
     return NextResponse.json(analisisMaestro);
   } catch (error) {
     console.error('❌ Error generando reporte maestro:', error);
-    return NextResponse.json({ 
+    return NextResponse.json({
       error: 'Error al generar reporte',
       details: error instanceof Error ? error.message : String(error)
     }, { status: 500 });
@@ -141,7 +141,7 @@ function generarAnalisisMaestro(equipos: any[], mantenimientos: any[], criticos:
   const analisisMantenimiento = {
     totalProgramados: mantenimientos.length,
     pendientes: mantenimientos.filter(m => m.estado === 'Pendiente').length,
-    vencidos: mantenimientos.filter(m => 
+    vencidos: mantenimientos.filter(m =>
       m.estado === 'Pendiente' && new Date(m.fecha_programada) < ahora
     ).length,
     enProgreso: mantenimientos.filter(m => m.estado === 'En Progreso').length,
@@ -230,9 +230,9 @@ function identificarEquiposCriticos(equipos: any[], mantenimientos: any[]): Equi
 
     // CRITERIO 6: Mantenimientos Vencidos
     const mantsVencidos = mantenimientos.filter(
-      m => m.equipo_id === equipo.id && 
-           m.estado === 'Pendiente' && 
-           new Date(m.fecha_programada) < new Date()
+      m => m.equipo_id === equipo.id &&
+        m.estado === 'Pendiente' &&
+        new Date(m.fecha_programada) < new Date()
     );
     if (mantsVencidos.length > 0) {
       razones.push(`${mantsVencidos.length} mantenimientos vencidos - atención urgente requerida`);
@@ -243,7 +243,7 @@ function identificarEquiposCriticos(equipos: any[], mantenimientos: any[]): Equi
     const ultimoMant = mantenimientos
       .filter(m => m.equipo_id === equipo.id && m.estado === 'Completado')
       .sort((a, b) => new Date(b.fecha_completado || 0).getTime() - new Date(a.fecha_completado || 0).getTime())[0];
-    
+
     if (!ultimoMant || (new Date().getTime() - new Date(ultimoMant.fecha_completado).getTime()) > 180 * 24 * 60 * 60 * 1000) {
       razones.push('Sin mantenimiento en los últimos 6 meses - riesgo de deterioro');
       puntuacion += 15;
@@ -333,8 +333,8 @@ function generarPlanMejoramiento(equipos: any[], criticos: EquipoCritico[], mant
   return {
     acciones: acciones.sort((a, b) => {
       const prioridades = { 'URGENTE': 3, 'ALTA': 2, 'MEDIA': 1 };
-      return (prioridades[b.prioridad as keyof typeof prioridades] || 0) - 
-             (prioridades[a.prioridad as keyof typeof prioridades] || 0);
+      return (prioridades[b.prioridad as keyof typeof prioridades] || 0) -
+        (prioridades[a.prioridad as keyof typeof prioridades] || 0);
     }),
     resumen: {
       totalAcciones: acciones.length,
@@ -348,14 +348,14 @@ function generarPlanMejoramiento(equipos: any[], criticos: EquipoCritico[], mant
 
 function calcularKPIs(equipos: any[], mantenimientos: any[], criticos: EquipoCritico[]) {
   const totalEquipos = equipos.length || 1; // Evitar división por 0
-  
+
   // Contar equipos operativos usando la relación anidada
-  const equiposOperativos = equipos.filter(eq => 
+  const equiposOperativos = equipos.filter(eq =>
     eq.estado?.nombre === 'Operativo' || eq.estado === 'Operativo'
   ).length;
-  
+
   // Mantenimientos pendientes y vencidos
-  const mantsPendientes = mantenimientos.filter(m => 
+  const mantsPendientes = mantenimientos.filter(m =>
     m.estado_ejecucion === 'Pendiente' || m.estado === 'Pendiente'
   ).length;
   const mantsVencidos = mantenimientos.filter(m => {
@@ -372,12 +372,12 @@ function calcularKPIs(equipos: any[], mantenimientos: any[], criticos: EquipoCri
   return {
     disponibilidad: ((equiposOperativos / totalEquipos) * 100).toFixed(1) + '%',
     criticidad: ((criticos.length / totalEquipos) * 100).toFixed(1) + '%',
-    cumplimientoMantenimiento: mantenimientos.length > 0 
-      ? (((mantenimientos.length - mantsVencidos) / mantenimientos.length) * 100).toFixed(1) + '%' 
+    cumplimientoMantenimiento: mantenimientos.length > 0
+      ? (((mantenimientos.length - mantsVencidos) / mantenimientos.length) * 100).toFixed(1) + '%'
       : '100.0%',
     edadPromedio: (equipos.reduce((sum, eq) => sum + (parseInt(eq.antiguedad_anios) || 0), 0) / totalEquipos).toFixed(1) + ' años',
-    tasaFallas: ((equipos.filter(eq => 
-      (eq.estado?.nombre !== 'Operativo' && eq.estado?.nombre) || 
+    tasaFallas: ((equipos.filter(eq =>
+      (eq.estado?.nombre !== 'Operativo' && eq.estado?.nombre) ||
       (eq.estado !== 'Operativo' && eq.estado)
     ).length / totalEquipos) * 100).toFixed(1) + '%',
     costoPromedioPorEquipo: (costoTotal / totalEquipos).toLocaleString('es-CO', { style: 'currency', currency: 'COP' }),
@@ -390,7 +390,7 @@ function generarRecomendacionesEstrategicas(resumen: any, criticos: EquipoCritic
   // Análisis de criticidad
   if (criticos.length > resumen.totalEquipos * 0.3) {
     recomendaciones.push(
-      `🔴 CRÍTICO: ${criticos.length} equipos (${((criticos.length/resumen.totalEquipos)*100).toFixed(1)}%) requieren atención prioritaria. Se recomienda implementar un plan de acción inmediato para reducir riesgos operativos.`
+      `🔴 CRÍTICO: ${criticos.length} equipos (${((criticos.length / resumen.totalEquipos) * 100).toFixed(1)}%) requieren atención prioritaria. Se recomienda implementar un plan de acción inmediato para reducir riesgos operativos.`
     );
   }
 
@@ -405,7 +405,7 @@ function generarRecomendacionesEstrategicas(resumen: any, criticos: EquipoCritic
   const disponibilidad = (resumen.porEstado['Operativo'] || 0) / resumen.totalEquipos;
   if (disponibilidad < 0.85) {
     recomendaciones.push(
-      `📊 La disponibilidad operativa es del ${(disponibilidad*100).toFixed(1)}%. Meta recomendada: 95%. Implementar acciones correctivas inmediatas.`
+      `📊 La disponibilidad operativa es del ${(disponibilidad * 100).toFixed(1)}%. Meta recomendada: 95%. Implementar acciones correctivas inmediatas.`
     );
   }
 
@@ -431,14 +431,14 @@ function generarRecomendacionesEstrategicas(resumen: any, criticos: EquipoCritic
 function agruparPor(array: any[], campo: string): Record<string, number> {
   return array.reduce((acc, item) => {
     let valor;
-    
+
     // Manejar relaciones anidadas
     if (campo === 'categoria' || campo === 'estado' || campo === 'sede') {
       valor = item[campo]?.nombre || item[campo] || 'Sin especificar';
     } else {
       valor = item[campo] || 'Sin especificar';
     }
-    
+
     acc[valor] = (acc[valor] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
@@ -456,16 +456,16 @@ async function generarReporteMaestroExcel(
 ): Promise<Buffer> {
   try {
     const workbook = new ExcelJS.Workbook();
-    
+
     // Leer plantilla
     const plantillaPath = path.join(process.cwd(), 'app', 'plantillas-excel', 'Reporte_maestro.xlsx');
-    
+
     console.log('📂 Leyendo plantilla maestro desde:', plantillaPath);
-    
+
     if (!fs.existsSync(plantillaPath)) {
       throw new Error(`No se encontró la plantilla en: ${plantillaPath}`);
     }
-    
+
     await workbook.xlsx.readFile(plantillaPath);
     console.log('✅ Plantilla maestro cargada correctamente');
 
@@ -476,7 +476,7 @@ async function generarReporteMaestroExcel(
     if (resumenSheet) {
       // Actualizar fecha
       resumenSheet.getCell('A2').value = `Fecha: ${new Date().toLocaleDateString('es-ES')}`;
-      
+
       // KPIs principales (empezar en fila 6)
       let row = 6;
       const kpisData = [
@@ -496,7 +496,7 @@ async function generarReporteMaestroExcel(
         fila.commit();
         row++;
       });
-      
+
       console.log('✅ Hoja Resumen Ejecutivo completada');
     }
 
@@ -506,7 +506,7 @@ async function generarReporteMaestroExcel(
     const inventarioSheet = workbook.getWorksheet('Inventario Completo');
     if (inventarioSheet) {
       let filaInicio = 2;
-      
+
       // Obtener equipos con relaciones completas
       const { data: equiposCompletos } = await supabase
         .from('inventario_general')
@@ -517,12 +517,12 @@ async function generarReporteMaestroExcel(
           sede:sedes(id, nombre)
         `)
         .order('created_at', { ascending: false });
-      
+
       const equiposData = equiposCompletos || equipos;
-      
+
       equiposData.forEach((eq, index) => {
         const fila = inventarioSheet.getRow(filaInicio + index);
-        
+
         fila.getCell(1).value = eq.id || '';
         fila.getCell(2).value = eq.cantidad || 1;
         fila.getCell(3).value = eq.categoria?.nombre || '';
@@ -535,10 +535,10 @@ async function generarReporteMaestroExcel(
         fila.getCell(10).value = eq.responsable || '';
         fila.getCell(11).value = eq.es_critico ? 'Sí' : 'No';
         fila.getCell(12).value = eq.observaciones || '';
-        
+
         fila.commit();
       });
-      
+
       console.log(`✅ Hoja Inventario Completo: ${equiposData.length} equipos`);
     }
 
@@ -548,7 +548,7 @@ async function generarReporteMaestroExcel(
     const mantenimientoSheet = workbook.getWorksheet('Plan de Mantenimiento');
     if (mantenimientoSheet) {
       let filaInicio = 2;
-      
+
       // Obtener mantenimientos con relaciones completas
       const { data: mantenimientosCompletos } = await supabase
         .from('plan_mantenimiento')
@@ -563,31 +563,81 @@ async function generarReporteMaestroExcel(
           accion:acciones_mantenimiento(id, nombre)
         `)
         .order('fecha_programada', { ascending: true });
-      
+
       const mantenimientosData = mantenimientosCompletos || mantenimientos;
-      
+
+      // Headers para nuevas columnas IA
+      const headerRow = mantenimientoSheet.getRow(1);
+      headerRow.getCell(7).value = 'Evaluación IA';
+      headerRow.getCell(8).value = 'Procedimiento Sugerido';
+      headerRow.getCell(9).value = 'Repuestos y Costos';
+      headerRow.commit();
+
       mantenimientosData.forEach((m, index) => {
         const fila = mantenimientoSheet.getRow(filaInicio + index);
-        
+
         const fecha = m.fecha_programada ? new Date(m.fecha_programada) : null;
-        const fechaStr = fecha ? 
-          `${String(fecha.getDate()).padStart(2, '0')}/${String(fecha.getMonth() + 1).padStart(2, '0')}/${fecha.getFullYear()}` : 
+        const fechaStr = fecha ?
+          `${String(fecha.getDate()).padStart(2, '0')}/${String(fecha.getMonth() + 1).padStart(2, '0')}/${fecha.getFullYear()}` :
           '';
-        
-        const nombreEquipo = m.equipo 
-          ? `${m.equipo.serial || ''} ${m.equipo.marca || ''} ${m.equipo.modelo || ''}`.trim() 
+
+        const nombreEquipo = m.equipo
+          ? `${m.equipo.serial || ''} ${m.equipo.marca || ''} ${m.equipo.modelo || ''}`.trim()
           : '';
-        
+
         fila.getCell(1).value = nombreEquipo;
         fila.getCell(2).value = m.accion?.nombre || 'Mantenimiento';
         fila.getCell(3).value = m.responsable_ejecucion || '';
         fila.getCell(4).value = fechaStr;
         fila.getCell(5).value = m.estado_ejecucion || 'Pendiente';
         fila.getCell(6).value = m.presupuesto ? `$${m.presupuesto.toLocaleString()}` : '';
-        
+
+        // --- DATOS IA ---
+        let evaluacionStr = '';
+        let procedimientoStr = '';
+        let repuestosStr = '';
+
+        if (m.analisis_ia) {
+          const ia = m.analisis_ia;
+
+          // 1. Evaluación
+          if (ia.evaluacion_plan) {
+            evaluacionStr = `Adecuación: ${ia.evaluacion_plan.adecuacion || 'N/A'}\n${ia.evaluacion_plan.observaciones || ''}`;
+          }
+
+          // 2. Procedimiento
+          if (ia.procedimiento_optimizado && Array.isArray(ia.procedimiento_optimizado)) {
+            procedimientoStr = ia.procedimiento_optimizado
+              .map((p: any) => `${p.paso}. ${p.descripcion}`)
+              .join('\n');
+          }
+
+          // 3. Repuestos
+          if (ia.componentes_necesarios && Array.isArray(ia.componentes_necesarios)) {
+            repuestosStr = ia.componentes_necesarios.map((c: any) => {
+              let info = `• ${c.componente} (${c.prioridad || '-'})`;
+              if (c.opciones_compra && c.opciones_compra.length > 0) {
+                const bestOption = c.opciones_compra[0];
+                const precio = bestOption.precio_total ? `$${bestOption.precio_total.toLocaleString()}` : 'Consultar';
+                info += ` - ${bestOption.tienda}: ${precio}`;
+              }
+              return info;
+            }).join('\n');
+          }
+        }
+
+        fila.getCell(7).value = evaluacionStr;
+        fila.getCell(7).alignment = { wrapText: true, vertical: 'top' };
+
+        fila.getCell(8).value = procedimientoStr;
+        fila.getCell(8).alignment = { wrapText: true, vertical: 'top' };
+
+        fila.getCell(9).value = repuestosStr;
+        fila.getCell(9).alignment = { wrapText: true, vertical: 'top' };
+
         fila.commit();
       });
-      
+
       console.log(`✅ Hoja Mantenimientos: ${mantenimientosData.length} actividades`);
     }
 
@@ -597,7 +647,7 @@ async function generarReporteMaestroExcel(
     const criticosSheet = workbook.getWorksheet('Equipos Críticos');
     if (criticosSheet) {
       let filaInicio = 2;
-      
+
       // Obtener equipos críticos con relaciones completas
       const { data: criticosCompletos } = await supabase
         .from('equipos_criticos')
@@ -613,17 +663,17 @@ async function generarReporteMaestroExcel(
         `)
         .eq('resuelto', false)
         .order('fecha_limite_accion', { ascending: true });
-      
+
       const criticosData = criticosCompletos || criticos;
-      
+
       criticosData.forEach((critico, index) => {
         const fila = criticosSheet.getRow(filaInicio + index);
         const equipo = critico.equipo || {};
-        
-        const fechaLimite = critico.fecha_limite_accion 
+
+        const fechaLimite = critico.fecha_limite_accion
           ? new Date(critico.fecha_limite_accion).toLocaleDateString('es-ES')
           : '';
-        
+
         fila.getCell(1).value = equipo.id || '';
         fila.getCell(2).value = equipo.categoria?.nombre || '';
         fila.getCell(3).value = equipo.serial || '';
@@ -632,10 +682,10 @@ async function generarReporteMaestroExcel(
         fila.getCell(6).value = critico.accion_requerida || 'Mantenimiento preventivo';
         fila.getCell(7).value = critico.costo_estimado ? `$${critico.costo_estimado}` : 'Pendiente';
         fila.getCell(8).value = fechaLimite;
-        
+
         fila.commit();
       });
-      
+
       console.log(`✅ Hoja Equipos Críticos: ${criticosData.length} equipos`);
     }
 
@@ -645,19 +695,19 @@ async function generarReporteMaestroExcel(
     const analisisSheet = workbook.getWorksheet('Análisis y Recomendaciones');
     if (analisisSheet) {
       let row = 3;
-      
+
       if (analisis.planMejoramiento?.acciones) {
         analisis.planMejoramiento.acciones.forEach((accion: any, index: number) => {
           analisisSheet.getCell(`A${row}`).value = `${index + 1}. ${accion.accion}`;
           analisisSheet.getCell(`A${row}`).font = { bold: true };
           row++;
-          
+
           analisisSheet.getCell(`A${row}`).value = `   Prioridad: ${accion.prioridad} | Plazo: ${accion.plazo}`;
           row++;
-          
+
           analisisSheet.getCell(`A${row}`).value = `   Costo Estimado: $${accion.costoEstimado?.toLocaleString('es-CO') || '0'}`;
           row++;
-          
+
           analisisSheet.getCell(`A${row}`).value = `   Impacto: ${accion.impacto}`;
           row += 2;
         });
@@ -677,14 +727,14 @@ async function generarReporteMaestroExcel(
           row++;
         });
       }
-      
+
       console.log('✅ Hoja Análisis y Recomendaciones completada');
     }
 
     console.log('💾 Generando archivo Excel maestro...');
     const buffer = await workbook.xlsx.writeBuffer();
     console.log('✅ Excel maestro generado correctamente');
-    
+
     return Buffer.from(buffer);
   } catch (error) {
     console.error('❌ Error generando Excel maestro:', error);
